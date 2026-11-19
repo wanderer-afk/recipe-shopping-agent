@@ -1,0 +1,163 @@
+EXAMPLE ONLY - made-up prices for showcasing the project. Not real. Do not use for shopping.
+item,category,example_price_usd,example_unit,note
+Salt (fine),Spices & seasonings,3.94,per package,MADE UP for showcase
+Black pepper,Spices & seasonings,2.91,per package,MADE UP for showcase
+Garlic,Produce,2.45,per package,MADE UP for showcase
+Onion (yellow),Produce,0.72,per package,MADE UP for showcase
+Ginger (fresh),Produce,2.11,per package,MADE UP for showcase
+Lemon,Produce,1.60,per package,MADE UP for showcase
+Lime,Produce,0.67,per package,MADE UP for showcase
+Scallions (green onions),Produce,2.02,per package,MADE UP for showcase
+Cilantro (fresh),Produce,0.61,per package,MADE UP for showcase
+Parsley (flat-leaf),Produce,1.80,per package,MADE UP for showcase
+Tomatoes,Produce,0.71,per package,MADE UP for showcase
+Potatoes,Produce,0.77,per package,MADE UP for showcase
+Carrots,Produce,1.77,per package,MADE UP for showcase
+Celery,Produce,2.98,per package,MADE UP for showcase
+Bell peppers,Produce,0.87,per package,MADE UP for showcase
+Chili peppers (fresh),Produce,1.17,per package,MADE UP for showcase
+Jalapeno,Produce,2.38,per package,MADE UP for showcase
+Spinach,Produce,3.34,per package,MADE UP for showcase
+Cabbage,Produce,2.23,per package,MADE UP for showcase
+Mushrooms,Produce,1.69,per package,MADE UP for showcase
+Cucumber,Produce,3.43,per package,MADE UP for showcase
+Avocado,Produce,0.64,per package,MADE UP for showcase
+Eggplant,Produce,3.08,per package,MADE UP for showcase
+Zucchini,Produce,1.37,per package,MADE UP for showcase
+Green beans,Produce,0.93,per package,MADE UP for showcase
+Bean sprouts,Produce,0.85,per package,MADE UP for showcase
+Leek,Produce,1.43,per package,MADE UP for showcase
+Shallot,Produce,2.95,per package,MADE UP for showcase
+Sweet potato,Produce,1.04,per package,MADE UP for showcase
+Cauliflower,Produce,2.24,per package,MADE UP for showcase
+Broccoli,Produce,2.42,per package,MADE UP for showcase
+Kale,Produce,1.62,per package,MADE UP for showcase
+Lettuce (romaine),Produce,2.14,per package,MADE UP for showcase
+Apples,Produce,0.69,per package,MADE UP for showcase
+Bananas,Produce,0.68,per package,MADE UP for showcase
+Mango,Produce,1.12,per package,MADE UP for showcase
+Coconut (fresh or shredded),Produce,2.54,per package,MADE UP for showcase
+Olive oil,Oils & sauces,4.14,per package,MADE UP for showcase
+Vegetable oil (neutral),Oils & sauces,3.57,per package,MADE UP for showcase
+Sesame oil (toasted),Oils & sauces,4.93,per package,MADE UP for showcase
+Butter,Dairy & eggs,3.54,per package,MADE UP for showcase
+Eggs,Dairy & eggs,2.85,per package,MADE UP for showcase
+Milk,Dairy & eggs,5.07,per package,MADE UP for showcase
+Heavy cream,Dairy & eggs,4.65,per package,MADE UP for showcase
+Plain yogurt,Dairy & eggs,2.60,per package,MADE UP for showcase
+Paneer,Dairy & eggs,4.08,per package,MADE UP for showcase
+Parmesan,Dairy & eggs,3.86,per package,MADE UP for showcase
+Feta,Dairy & eggs,5.44,per package,MADE UP for showcase
+Cheddar,Dairy & eggs,4.78,per package,MADE UP for showcase
+Mozzarella,Dairy & eggs,2.80,per package,MADE UP for showcase
+Cream cheese,Dairy & eggs,5.91,per package,MADE UP for showcase
+Tofu (firm),Protein,2.24,per package,MADE UP for showcase
+Chicken thighs (bone-in or boneless),Meat & poultry,5.51,per package,MADE UP for showcase
+Chicken breast,Meat & poultry,7.54,per package,MADE UP for showcase
+Ground beef,Meat & poultry,3.91,per package,MADE UP for showcase
+Ground pork,Meat & poultry,5.93,per package,MADE UP for showcase
+Pork shoulder,Meat & poultry,3.24,per package,MADE UP for showcase
+Bacon,Meat & poultry,7.01,per package,MADE UP for showcase
+Sausage (smoked or Italian),Meat & poultry,7.59,per package,MADE UP for showcase
+Beef chuck,Meat & poultry,6.44,per package,MADE UP for showcase
+Lamb (leg or shoulder),Meat & poultry,8.25,per package,MADE UP for showcase
+Shrimp,Seafood,7.82,per package,MADE UP for showcase
+Salmon fillet,Seafood,11.26,per package,MADE UP for showcase
+Canned tuna,Seafood,10.35,per package,MADE UP for showcase
+Dried shrimp,Seafood,10.22,per package,MADE UP for showcase
+Fish sauce,Oils & sauces,4.28,per package,MADE UP for showcase
+Soy sauce,Oils & sauces,6.20,per package,MADE UP for showcase
+Oyster sauce,Oils & sauces,6.72,per package,MADE UP for showcase
+Rice vinegar,Oils & sauces,4.37,per package,MADE UP for showcase
+Apple cider vinegar,Oils & sauces,5.32,per package,MADE UP for showcase
+White vinegar,Oils & sauces,2.30,per package,MADE UP for showcase
+Miso paste,Oils & sauces,5.51,per package,MADE UP for showcase
+Gochujang,Oils & sauces,5.24,per package,MADE UP for showcase
+Sriracha,Oils & sauces,6.97,per package,MADE UP for showcase
+Tahini,Oils & sauces,6.11,per package,MADE UP for showcase
+Harissa,Oils & sauces,3.42,per package,MADE UP for showcase
+Tomato paste,Canned & jarred,1.77,per package,MADE UP for showcase
+Canned crushed tomatoes,Canned & jarred,2.34,per package,MADE UP for showcase
+Coconut milk (canned),Canned & jarred,1.05,per package,MADE UP for showcase
+Chickpeas (canned),Canned & jarred,1.92,per package,MADE UP for showcase
+Black beans (canned),Canned & jarred,1.34,per package,MADE UP for showcase
+Kidney beans (canned),Canned & jarred,1.23,per package,MADE UP for showcase
+Chicken broth,Stocks & broths,1.62,per package,MADE UP for showcase
+Beef broth,Stocks & broths,3.04,per package,MADE UP for showcase
+Dashi granules,Stocks & broths,1.76,per package,MADE UP for showcase
+Rice (long grain),Grains & pasta,2.14,per package,MADE UP for showcase
+Rice (jasmine),Grains & pasta,2.69,per package,MADE UP for showcase
+Rice (sticky or glutinous),Grains & pasta,4.51,per package,MADE UP for showcase
+Rice (short grain or sushi),Grains & pasta,1.51,per package,MADE UP for showcase
+Rice (basmati),Grains & pasta,2.91,per package,MADE UP for showcase
+Rice noodles (dry),Grains & pasta,3.29,per package,MADE UP for showcase
+Egg noodles,Grains & pasta,4.56,per package,MADE UP for showcase
+Ramen noodles,Grains & pasta,4.31,per package,MADE UP for showcase
+"Pasta (dry, mixed shapes)",Grains & pasta,4.48,per package,MADE UP for showcase
+Couscous,Grains & pasta,2.26,per package,MADE UP for showcase
+Bulgur,Grains & pasta,2.78,per package,MADE UP for showcase
+Lentils (red),Grains & pasta,2.56,per package,MADE UP for showcase
+Quinoa,Grains & pasta,4.56,per package,MADE UP for showcase
+Flour (all-purpose),Baking,4.85,per package,MADE UP for showcase
+Bread flour,Baking,2.03,per package,MADE UP for showcase
+Cornmeal / masa harina,Baking,2.12,per package,MADE UP for showcase
+Tortillas (corn),Bread & wraps,2.08,per package,MADE UP for showcase
+Tortillas (flour),Bread & wraps,2.08,per package,MADE UP for showcase
+Pita bread,Bread & wraps,2.71,per package,MADE UP for showcase
+Naan,Bread & wraps,2.97,per package,MADE UP for showcase
+Baguette,Bread & wraps,2.16,per package,MADE UP for showcase
+Sandwich bread (sliced),Bread & wraps,1.51,per package,MADE UP for showcase
+Panko breadcrumbs,Baking,2.97,per package,MADE UP for showcase
+Sugar (granulated),Baking,2.79,per package,MADE UP for showcase
+Brown sugar,Baking,3.48,per package,MADE UP for showcase
+Honey,Baking,4.84,per package,MADE UP for showcase
+Baking powder,Baking,3.92,per package,MADE UP for showcase
+Baking soda,Baking,3.30,per package,MADE UP for showcase
+Yeast (instant),Baking,3.66,per package,MADE UP for showcase
+Vanilla extract,Baking,3.87,per package,MADE UP for showcase
+Cumin (ground),Spices & seasonings,2.32,per package,MADE UP for showcase
+Cumin seeds,Spices & seasonings,7.40,per package,MADE UP for showcase
+Paprika (sweet),Spices & seasonings,6.68,per package,MADE UP for showcase
+Smoked paprika,Spices & seasonings,7.25,per package,MADE UP for showcase
+Chili powder,Spices & seasonings,6.79,per package,MADE UP for showcase
+Cayenne pepper,Spices & seasonings,4.35,per package,MADE UP for showcase
+Red pepper flakes,Spices & seasonings,4.39,per package,MADE UP for showcase
+Oregano (dried),Spices & seasonings,2.62,per package,MADE UP for showcase
+Basil (dried),Spices & seasonings,5.81,per package,MADE UP for showcase
+Thyme (dried),Spices & seasonings,2.37,per package,MADE UP for showcase
+Bay leaves,Spices & seasonings,2.40,per package,MADE UP for showcase
+Cinnamon (ground),Spices & seasonings,3.25,per package,MADE UP for showcase
+Cinnamon sticks,Spices & seasonings,2.97,per package,MADE UP for showcase
+Nutmeg (ground),Spices & seasonings,4.04,per package,MADE UP for showcase
+Turmeric (ground),Spices & seasonings,2.32,per package,MADE UP for showcase
+Garam masala,Spices & seasonings,2.00,per package,MADE UP for showcase
+Curry powder,Spices & seasonings,2.91,per package,MADE UP for showcase
+Coriander seeds,Spices & seasonings,2.61,per package,MADE UP for showcase
+Star anise,Spices & seasonings,4.18,per package,MADE UP for showcase
+Sichuan peppercorns,Spices & seasonings,2.15,per package,MADE UP for showcase
+Five-spice powder,Spices & seasonings,7.25,per package,MADE UP for showcase
+Cardamom (whole pods),Spices & seasonings,5.68,per package,MADE UP for showcase
+Sumac,Spices & seasonings,2.89,per package,MADE UP for showcase
+Za'atar,Spices & seasonings,3.51,per package,MADE UP for showcase
+Garlic powder,Spices & seasonings,4.08,per package,MADE UP for showcase
+Onion powder,Spices & seasonings,4.18,per package,MADE UP for showcase
+Chili crisp,Oils & sauces,2.61,per package,MADE UP for showcase
+Hot sauce (vinegar-based),Oils & sauces,6.24,per package,MADE UP for showcase
+Ketchup,Oils & sauces,6.97,per package,MADE UP for showcase
+Mustard (yellow),Oils & sauces,4.33,per package,MADE UP for showcase
+Mayonnaise,Oils & sauces,4.42,per package,MADE UP for showcase
+Peanut butter,Oils & sauces,2.43,per package,MADE UP for showcase
+Peanuts (roasted),Snacks & nuts,2.41,per package,MADE UP for showcase
+Sesame seeds,Snacks & nuts,3.37,per package,MADE UP for showcase
+Almonds,Snacks & nuts,3.06,per package,MADE UP for showcase
+Pine nuts,Snacks & nuts,5.32,per package,MADE UP for showcase
+Raisins,Snacks & nuts,2.65,per package,MADE UP for showcase
+Dates (dried),Snacks & nuts,2.09,per package,MADE UP for showcase
+Dried chilies (guajillo or ancho),Spices & seasonings,7.71,per package,MADE UP for showcase
+Vinegar (white distilled),Oils & sauces,4.64,per package,MADE UP for showcase
+Fenugreek leaves (dried),Spices & seasonings,2.88,per package,MADE UP for showcase
+Kimchi,Fermented,3.63,per package,MADE UP for showcase
+Sauerkraut,Fermented,2.08,per package,MADE UP for showcase
+Pickled jalapenos,Fermented,3.58,per package,MADE UP for showcase
+Water,Other,2.96,per package,MADE UP for showcase
+Ice,Other,2.73,per package,MADE UP for showcase
