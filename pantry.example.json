@@ -1,0 +1,4 @@
+{
+  "_about": "Copy this file to pantry.json and list what you already have at home. Use lower-case names exactly as the recipe spells them, for example \"olive oil\". pantry.json is gitignored, so your list stays on your computer.",
+  "have": ["olive oil", "garlic"]
+}

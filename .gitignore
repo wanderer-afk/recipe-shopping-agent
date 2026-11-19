@@ -1,0 +1,13 @@
+# Secrets: never publish a key
+.env
+
+# Bailey's personal data: his home stock and his real store prices
+pantry.json
+store_prices.csv
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# The item list built from Bailey's private recipe book: never publish
+all_items.csv
