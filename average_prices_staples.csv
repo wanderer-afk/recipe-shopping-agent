@@ -1,0 +1,162 @@
+item,category,cultures_that_use_it,typical_price,unit,source,as_of,note
+Salt (fine),Spices & seasonings,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Black pepper,Spices & seasonings,Western; South Asian; East Asian; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Garlic,Produce,Mediterranean; Asian; Latin American; Middle Eastern; African; Western,,,,,No public source checked yet; fill in from your own shopping
+Onion (yellow),Produce,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Ginger (fresh),Produce,South Asian; East Asian; Southeast Asian; African,,,,,No public source checked yet; fill in from your own shopping
+Lemon,Produce,Mediterranean; Middle Eastern; Latin American; Western,,,,,No public source checked yet; fill in from your own shopping
+Lime,Produce,Latin American; Southeast Asian; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Scallions (green onions),Produce,East Asian; Southeast Asian; Western,,,,,No public source checked yet; fill in from your own shopping
+Cilantro (fresh),Produce,Latin American; South Asian; Southeast Asian; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Parsley (flat-leaf),Produce,Mediterranean; Middle Eastern; Western,,,,,No public source checked yet; fill in from your own shopping
+Tomatoes,Produce,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Potatoes,Produce,Western; South Asian; Latin American; East Asian,,,,,No public source checked yet; fill in from your own shopping
+Carrots,Produce,Western; East Asian; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Celery,Produce,Western; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Bell peppers,Produce,Latin American; Western; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Chili peppers (fresh),Produce,Southeast Asian; Latin American; East Asian; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Jalapeno,Produce,Latin American; Western,,,,,No public source checked yet; fill in from your own shopping
+Spinach,Produce,Western; Middle Eastern; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Cabbage,Produce,East Asian; Eastern European; Western,,,,,No public source checked yet; fill in from your own shopping
+Mushrooms,Produce,East Asian; Western; European,,,,,No public source checked yet; fill in from your own shopping
+Cucumber,Produce,Middle Eastern; East Asian; Eastern European,,,,,No public source checked yet; fill in from your own shopping
+Avocado,Produce,Latin American; Western,,,,,No public source checked yet; fill in from your own shopping
+Eggplant,Produce,Mediterranean; Middle Eastern; East Asian; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Zucchini,Produce,Mediterranean; Western,,,,,No public source checked yet; fill in from your own shopping
+Green beans,Produce,Western; East Asian; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Bean sprouts,Produce,East Asian; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Leek,Produce,Western; French,,,,,No public source checked yet; fill in from your own shopping
+Shallot,Produce,French; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Sweet potato,Produce,Latin American; Western; East Asian; African,,,,,No public source checked yet; fill in from your own shopping
+Cauliflower,Produce,South Asian; Western; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Broccoli,Produce,Western; East Asian,,,,,No public source checked yet; fill in from your own shopping
+Kale,Produce,Western; African,,,,,No public source checked yet; fill in from your own shopping
+Lettuce (romaine),Produce,Western; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Apples,Produce,Western; East Asian,,,,,No public source checked yet; fill in from your own shopping
+Bananas,Produce,Latin American; African; Southeast Asian; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Mango,Produce,South Asian; Southeast Asian; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Coconut (fresh or shredded),Produce,Southeast Asian; South Asian; Latin American; African,,,,,No public source checked yet; fill in from your own shopping
+Olive oil,Oils & sauces,Mediterranean; Western; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Vegetable oil (neutral),Oils & sauces,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Sesame oil (toasted),Oils & sauces,East Asian; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Butter,Dairy & eggs,Western; South Asian; Eastern European,,,,,No public source checked yet; fill in from your own shopping
+Eggs,Dairy & eggs,Everywhere,2.58,"per dozen (large, Grade A)","US BLS average price, FRED series APU0000708111",January 2026,National average from the BLS; regional prices differ
+Milk,Dairy & eggs,Western; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Heavy cream,Dairy & eggs,Western; French; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Plain yogurt,Dairy & eggs,South Asian; Middle Eastern; Eastern European; African,,,,,No public source checked yet; fill in from your own shopping
+Paneer,Dairy & eggs,South Asian,,,,,No public source checked yet; fill in from your own shopping
+Parmesan,Dairy & eggs,Italian; Western,,,,,No public source checked yet; fill in from your own shopping
+Feta,Dairy & eggs,Greek; Middle Eastern; Balkan,,,,,No public source checked yet; fill in from your own shopping
+Cheddar,Dairy & eggs,Western; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Mozzarella,Dairy & eggs,Italian; Western,,,,,No public source checked yet; fill in from your own shopping
+Cream cheese,Dairy & eggs,Western; Eastern European,,,,,No public source checked yet; fill in from your own shopping
+Tofu (firm),Protein,East Asian; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Chicken thighs (bone-in or boneless),Meat & poultry,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Chicken breast,Meat & poultry,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Ground beef,Meat & poultry,Western; Latin American; Middle Eastern; East Asian,,,,,No public source checked yet; fill in from your own shopping
+Ground pork,Meat & poultry,East Asian; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Pork shoulder,Meat & poultry,Latin American; Southeast Asian; Western,,,,,No public source checked yet; fill in from your own shopping
+Bacon,Meat & poultry,Western,,,,,No public source checked yet; fill in from your own shopping
+Sausage (smoked or Italian),Meat & poultry,Western; Latin American; Eastern European,,,,,No public source checked yet; fill in from your own shopping
+Beef chuck,Meat & poultry,Western; East Asian; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Lamb (leg or shoulder),Meat & poultry,Middle Eastern; Mediterranean; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Shrimp,Seafood,Everywhere coastal; Southeast Asian; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Salmon fillet,Seafood,Western; Japanese; Nordic,,,,,No public source checked yet; fill in from your own shopping
+Canned tuna,Seafood,Western; Mediterranean; Japanese,,,,,No public source checked yet; fill in from your own shopping
+Dried shrimp,Seafood,Southeast Asian; East Asian; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Fish sauce,Oils & sauces,Southeast Asian; East Asian,,,,,No public source checked yet; fill in from your own shopping
+Soy sauce,Oils & sauces,East Asian; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Oyster sauce,Oils & sauces,East Asian; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Rice vinegar,Oils & sauces,East Asian; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Apple cider vinegar,Oils & sauces,Western; African,,,,,No public source checked yet; fill in from your own shopping
+White vinegar,Oils & sauces,Western; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Miso paste,Oils & sauces,Japanese,,,,,No public source checked yet; fill in from your own shopping
+Gochujang,Oils & sauces,Korean,,,,,No public source checked yet; fill in from your own shopping
+Sriracha,Oils & sauces,Southeast Asian; Western,,,,,No public source checked yet; fill in from your own shopping
+Tahini,Oils & sauces,Middle Eastern; Mediterranean,,,,,No public source checked yet; fill in from your own shopping
+Harissa,Oils & sauces,North African,,,,,No public source checked yet; fill in from your own shopping
+Tomato paste,Canned & jarred,Mediterranean; Middle Eastern; Latin American; Western,,,,,No public source checked yet; fill in from your own shopping
+Canned crushed tomatoes,Canned & jarred,Mediterranean; Western,,,,,No public source checked yet; fill in from your own shopping
+Coconut milk (canned),Canned & jarred,Southeast Asian; South Asian; Latin American; African,,,,,No public source checked yet; fill in from your own shopping
+Chickpeas (canned),Canned & jarred,Middle Eastern; Mediterranean; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Black beans (canned),Canned & jarred,Latin American,,,,,No public source checked yet; fill in from your own shopping
+Kidney beans (canned),Canned & jarred,Western; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Chicken broth,Stocks & broths,Western; East Asian; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Beef broth,Stocks & broths,Western; East Asian,,,,,No public source checked yet; fill in from your own shopping
+Dashi granules,Stocks & broths,Japanese,,,,,No public source checked yet; fill in from your own shopping
+Rice (long grain),Grains & pasta,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Rice (jasmine),Grains & pasta,Southeast Asian; East Asian,,,,,No public source checked yet; fill in from your own shopping
+Rice (sticky or glutinous),Grains & pasta,Lao; Thai; East Asian,,,,,No public source checked yet; fill in from your own shopping
+Rice (short grain or sushi),Grains & pasta,Japanese; Korean,,,,,No public source checked yet; fill in from your own shopping
+Rice (basmati),Grains & pasta,South Asian; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Rice noodles (dry),Grains & pasta,Southeast Asian; East Asian,,,,,No public source checked yet; fill in from your own shopping
+Egg noodles,Grains & pasta,East Asian; Western,,,,,No public source checked yet; fill in from your own shopping
+Ramen noodles,Grains & pasta,Japanese; Korean,,,,,No public source checked yet; fill in from your own shopping
+"Pasta (dry, mixed shapes)",Grains & pasta,Italian; Western,,,,,No public source checked yet; fill in from your own shopping
+Couscous,Grains & pasta,North African; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Bulgur,Grains & pasta,Middle Eastern; Turkish,,,,,No public source checked yet; fill in from your own shopping
+Lentils (red),Grains & pasta,South Asian; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Quinoa,Grains & pasta,Andean; Western,,,,,No public source checked yet; fill in from your own shopping
+Flour (all-purpose),Baking,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Bread flour,Baking,Western; Japanese,,,,,No public source checked yet; fill in from your own shopping
+Cornmeal / masa harina,Baking,Latin American; American South,,,,,No public source checked yet; fill in from your own shopping
+Tortillas (corn),Bread & wraps,Latin American,,,,,No public source checked yet; fill in from your own shopping
+Tortillas (flour),Bread & wraps,Latin American; Western,,,,,No public source checked yet; fill in from your own shopping
+Pita bread,Bread & wraps,Middle Eastern; Mediterranean,,,,,No public source checked yet; fill in from your own shopping
+Naan,Bread & wraps,South Asian,,,,,No public source checked yet; fill in from your own shopping
+Baguette,Bread & wraps,French; Vietnamese,,,,,No public source checked yet; fill in from your own shopping
+Sandwich bread (sliced),Bread & wraps,Western; Japanese,,,,,No public source checked yet; fill in from your own shopping
+Panko breadcrumbs,Baking,Japanese; Western,,,,,No public source checked yet; fill in from your own shopping
+Sugar (granulated),Baking,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Brown sugar,Baking,Western; Southeast Asian; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Honey,Baking,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Baking powder,Baking,Western; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Baking soda,Baking,Western; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Yeast (instant),Baking,Western; East Asian; Eastern European,,,,,No public source checked yet; fill in from your own shopping
+Vanilla extract,Baking,Western; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Cumin (ground),Spices & seasonings,South Asian; Middle Eastern; Latin American; North African,,,,,No public source checked yet; fill in from your own shopping
+Cumin seeds,Spices & seasonings,South Asian; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Paprika (sweet),Spices & seasonings,Hungarian; Spanish; Western,,,,,No public source checked yet; fill in from your own shopping
+Smoked paprika,Spices & seasonings,Spanish; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Chili powder,Spices & seasonings,Latin American; Western,,,,,No public source checked yet; fill in from your own shopping
+Cayenne pepper,Spices & seasonings,South Asian; Latin American; Southern US,,,,,No public source checked yet; fill in from your own shopping
+Red pepper flakes,Spices & seasonings,Italian; Western,,,,,No public source checked yet; fill in from your own shopping
+Oregano (dried),Spices & seasonings,Mediterranean; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Basil (dried),Spices & seasonings,Italian; Western,,,,,No public source checked yet; fill in from your own shopping
+Thyme (dried),Spices & seasonings,French; Western,,,,,No public source checked yet; fill in from your own shopping
+Bay leaves,Spices & seasonings,Mediterranean; South Asian; Western,,,,,No public source checked yet; fill in from your own shopping
+Cinnamon (ground),Spices & seasonings,Middle Eastern; Mexican; South Asian; Western,,,,,No public source checked yet; fill in from your own shopping
+Cinnamon sticks,Spices & seasonings,South Asian; Chinese; Mexican,,,,,No public source checked yet; fill in from your own shopping
+Nutmeg (ground),Spices & seasonings,Western; Middle Eastern; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Turmeric (ground),Spices & seasonings,South Asian; Southeast Asian; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Garam masala,Spices & seasonings,South Asian,,,,,No public source checked yet; fill in from your own shopping
+Curry powder,Spices & seasonings,South Asian; Southeast Asian; Japanese,,,,,No public source checked yet; fill in from your own shopping
+Coriander seeds,Spices & seasonings,South Asian; Middle Eastern; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Star anise,Spices & seasonings,East Asian; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Sichuan peppercorns,Spices & seasonings,Chinese,,,,,No public source checked yet; fill in from your own shopping
+Five-spice powder,Spices & seasonings,Chinese,,,,,No public source checked yet; fill in from your own shopping
+Cardamom (whole pods),Spices & seasonings,South Asian; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Sumac,Spices & seasonings,Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Za'atar,Spices & seasonings,Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Garlic powder,Spices & seasonings,Western; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Onion powder,Spices & seasonings,Western; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Chili crisp,Oils & sauces,Chinese; Western,,,,,No public source checked yet; fill in from your own shopping
+Hot sauce (vinegar-based),Oils & sauces,Latin American; Southern US,,,,,No public source checked yet; fill in from your own shopping
+Ketchup,Oils & sauces,Western,,,,,No public source checked yet; fill in from your own shopping
+Mustard (yellow),Oils & sauces,Western,,,,,No public source checked yet; fill in from your own shopping
+Mayonnaise,Oils & sauces,Western; Japanese,,,,,No public source checked yet; fill in from your own shopping
+Peanut butter,Oils & sauces,Western; West African; Southeast Asian,,,,,No public source checked yet; fill in from your own shopping
+Peanuts (roasted),Snacks & nuts,Southeast Asian; West African; Latin American,,,,,No public source checked yet; fill in from your own shopping
+Sesame seeds,Snacks & nuts,East Asian; Middle Eastern; Western,,,,,No public source checked yet; fill in from your own shopping
+Almonds,Snacks & nuts,Middle Eastern; Western,,,,,No public source checked yet; fill in from your own shopping
+Pine nuts,Snacks & nuts,Italian; Middle Eastern,,,,,No public source checked yet; fill in from your own shopping
+Raisins,Snacks & nuts,Middle Eastern; Indian; Western,,,,,No public source checked yet; fill in from your own shopping
+Dates (dried),Snacks & nuts,Middle Eastern; North African; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Dried chilies (guajillo or ancho),Spices & seasonings,Latin American; Mexican,,,,,No public source checked yet; fill in from your own shopping
+Vinegar (white distilled),Oils & sauces,Western; South Asian,,,,,No public source checked yet; fill in from your own shopping
+Fenugreek leaves (dried),Spices & seasonings,South Asian,,,,,No public source checked yet; fill in from your own shopping
+Kimchi,Fermented,Korean,,,,,No public source checked yet; fill in from your own shopping
+Sauerkraut,Fermented,Eastern European; German,,,,,No public source checked yet; fill in from your own shopping
+Pickled jalapenos,Fermented,Latin American; Western,,,,,No public source checked yet; fill in from your own shopping
+Water,Other,Everywhere,,,,,No public source checked yet; fill in from your own shopping
+Ice,Other,Everywhere,,,,,No public source checked yet; fill in from your own shopping
