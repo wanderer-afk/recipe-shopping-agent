@@ -19,8 +19,7 @@
   .page { background:var(--paper); border:1px solid var(--paper-edge); border-radius:14px; padding:20px; margin:18px 0; box-shadow:0 3px 0 var(--paper-edge); }
   .page h2 { font-size:1.4rem; margin:0 0 4px; color:var(--tomato); }
   .page .hint { color:var(--soft); margin:0 0 12px; font-size:.95rem; }
-  .divider { text-align:center; color:var(--rule); letter-spacing:.5em; margin:6px 0 10px; }
-  textarea, input[type=text], input[type=number] {
+  textarea, input[type=text] {
     width:100%; box-sizing:border-box; font:inherit; padding:10px 12px; border:1px solid var(--rule);
     border-radius:10px; background:#fffdf7; color:var(--ink);
   }
@@ -45,13 +44,8 @@
   .grocery-title { text-align:center; font-size:1.6rem; margin:0; }
   .grocery-sub { text-align:center; font-style:italic; color:var(--soft); margin:2px 0 10px; }
   .box td:first-child::before { content:"\2610\00a0\00a0"; color:var(--ink); }
-  .total { border-top:2px solid var(--rule); margin-top:10px; padding-top:10px; font-weight:bold; }
-  .form-grid { display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px; }
-  .form-grid > div { min-width:0; }
-  .error { color:var(--tomato); margin:6px 0 0; min-height:1.2em; }
-  .saved-note { color:var(--sage); font-style:italic; margin-left:6px; }
+  .note { border-top:2px solid var(--rule); margin-top:10px; padding-top:10px; color:var(--soft); font-size:.92rem; }
   [hidden] { display:none !important; }
-  @media (max-width:560px) { .form-grid { grid-template-columns:1fr; } h1 { font-size:1.6rem; } }
 </style>
 </head>
 <body>
@@ -59,12 +53,12 @@
   <header>
     <div class="ornament">&#10047; &#10047; &#10047;</div>
     <h1>Our Kitchen Grocery Book</h1>
-    <p>Paste a recipe, say what is already at home, and see what to buy.</p>
+    <p>Give it a recipe. Say what is at home. Get the list to buy.</p>
   </header>
 
   <section class="page" aria-labelledby="h-recipe">
     <h2 id="h-recipe">1. Add a recipe</h2>
-    <p class="hint">One ingredient per line, with the amount first. For example: <em>1 1/2 cups milk</em>, <em>2 eggs</em>, <em>3 tbsp butter</em>. If a line is measured by spoon or cup but sold by weight, add the grams in brackets: <em>3/4 cup rice (150 g)</em>.</p>
+    <p class="hint">Type or paste the ingredients, one per line, amount first. You can also paste text copied from a PDF or a list. For example: <em>1 1/2 cups milk</em>, <em>2 eggs</em>, <em>3 tbsp butter</em>. If a spoon or cup amount is sold by weight, add the grams in brackets: <em>3/4 cup rice (150 g)</em>.</p>
     <label for="recipe">Ingredients</label>
     <textarea id="recipe" placeholder="1 1/2 cups milk&#10;2 eggs&#10;2 tbsp butter"></textarea>
     <p>
@@ -75,9 +69,9 @@
 
   <section class="page" id="have-card" hidden aria-labelledby="h-have">
     <h2 id="h-have">2. What do we already have?</h2>
-    <p class="hint">Tap one answer for each ingredient. Your answers are kept on this computer.</p>
+    <p class="hint">Tap one answer for each ingredient. Your answers stay on this computer.</p>
     <table>
-      <thead><tr><th>Ingredient</th><th>Amount</th><th>At home</th></tr></thead>
+      <thead><tr><th>Ingredient</th><th>Amount</th><th>Answer</th></tr></thead>
       <tbody id="have-body"></tbody>
     </table>
     <p><button class="soft tiny" id="clear-pantry">Clear all answers</button></p>
@@ -85,12 +79,12 @@
 
   <section class="page" id="list-card" hidden aria-labelledby="h-list">
     <p class="grocery-title" id="h-list">Grocery list</p>
-    <p class="grocery-sub">The cheapest packs that cover what the recipe needs</p>
+    <p class="grocery-sub">What to buy, in amounts stores sell</p>
     <table class="box">
-      <thead><tr><th>Item</th><th>Amount</th><th>Buy</th><th>Cost</th></tr></thead>
+      <thead><tr><th>Item</th><th>Need</th><th>Buy</th></tr></thead>
       <tbody id="list-body"></tbody>
     </table>
-    <p class="total" id="total"></p>
+    <p class="note" id="list-note"></p>
   </section>
 
   <section class="page" aria-labelledby="h-wants">
@@ -103,24 +97,16 @@
     <p><button class="soft tiny" id="want-clear">Clear this list</button></p>
   </section>
 
-  <section class="page" aria-labelledby="h-prices">
-    <h2 id="h-prices">4. Store prices</h2>
-    <p class="hint">Type in what you see on a store's shelf or website. Use the size printed on the package, like <em>16 oz</em>, <em>1 gal</em> or <em>1 dozen</em>. Example prices are not real.</p>
-    <div class="form-grid">
-      <div><label for="price-item">Item</label><input id="price-item" type="text" placeholder="whole milk"></div>
-      <div><label for="price-pack">Package size</label><input id="price-pack" type="text" placeholder="1 gal"></div>
-      <div><label for="price-cost">Price ($)</label><input id="price-cost" type="number" min="0" step="0.01" placeholder="4.50"></div>
-    </div>
-    <p class="error" id="price-error"></p>
-    <p>
-      <button id="price-add">Add price</button>
-      <button class="soft" id="price-download">Download prices (CSV)</button>
-    </p>
+  <section class="page" aria-labelledby="h-avg">
+    <h2 id="h-avg">AVERAGE PRICES WE FOUND</h2>
+    <p class="hint"><strong>FROM PUBLIC GOVERNMENT SOURCES ONLY. NOT FROM ANY STORE. NOT NEEDED TO MAKE THE LIST. NATIONAL AVERAGES, SO LOCAL PRICES DIFFER.</strong></p>
     <table>
-      <thead><tr><th>Item</th><th>Package</th><th>Price</th><th></th></tr></thead>
-      <tbody id="price-body"></tbody>
+      <thead><tr><th>Item</th><th>Average price</th><th>Source and date</th></tr></thead>
+      <tbody>
+        <tr class="dotted"><td><strong>EGGS, LARGE GRADE A</strong></td><td><strong>$2.58 PER DOZEN</strong></td><td><strong>US BUREAU OF LABOR STATISTICS, JANUARY 2026 (9+ MONTHS OLD)</strong></td></tr>
+      </tbody>
     </table>
-    <p class="status" id="price-empty"></p>
+    <p class="status"><strong>OTHER ITEMS HAVE NOT BEEN CHECKED YET.</strong></p>
   </section>
 </main>
 
@@ -169,6 +155,8 @@ function parseAmount(line) {
   if (amount === null) return null;
   const rest = qty[2];
   const lower = rest.toLowerCase();
+  // "2 eggs" or "3 cloves garlic": the item word itself is the name, not a unit.
+  if (/^(eggs?|cloves?|slices?|pods?|each)\b/.test(lower)) return { family: "count", base: amount, name: rest, amountText: qty[1] };
   const dozen = lower.match(/^dozen\b\s*(.*)$/);
   if (dozen) return { family: "count", base: amount * 12, name: dozen[1], amountText: `${qty[1]} dozen` };
   if (PACK_WORDS.test(rest)) {
@@ -187,8 +175,7 @@ function parseAmount(line) {
   return { family: "count", base: amount, name: rest, amountText: qty[1] };
 }
 
-// Same name on both sides of the price list: lower case, no brackets, no size words,
-// and plurals folded ("eggs" -> "egg", "tomatoes" -> "tomato", "pitas" -> "pita").
+// Same name on both sides: lower case, no brackets, no size words, plurals folded.
 function normName(text) {
   let s = text.toLowerCase().replace(/\([^)]*\)/g, " ").replace(/,.*$/, " ");
   s = s.replace(/\b(large|fresh|medium|small|whole)\b/g, " ").replace(/[^a-z\s-]/g, " ").replace(/\s+/g, " ").trim();
@@ -200,19 +187,27 @@ function normName(text) {
   return [...words, fixed].join(" ").trim();
 }
 
-// The cheapest total that covers the amount; leftovers count. Ties become ASK.
-function pickPacks(need, packs) {
-  if (need.family === "pack") return { status: "CHECK", reason: "counted in packages; check the amount by hand" };
-  const usable = packs.filter(p => p.family === need.family);
-  if (usable.length === 0) return { status: "CHECK", reason: "the store sells this by a different measure" };
-  const options = usable.map(p => {
-    const count = Math.max(1, Math.ceil(need.base / p.base - 1e-9));
-    return { pack: p.pack, count, total: Math.round(count * p.price * 100) / 100, leftover: count * p.base - need.base };
-  }).sort((a, b) => a.total - b.total || a.count - b.count || a.leftover - b.leftover);
-  const best = options[0];
-  const tied = options.filter(o => o.total === best.total && o.count === best.count);
-  if (tied.length > 1) return { status: "ASK", reason: "two packs cost the same: " + tied.map(t => t.pack).join(" or ") };
-  return { status: "OK", ...best };
+// Turns a need into an amount a shopper can find on a shelf, rounded UP, written "at least ...".
+// Returns null when there is no sensible store amount (for example, a count of packages).
+function storeAmount(need) {
+  if (need.family === "mass") {
+    const oz = need.base / 28.3495;
+    if (oz >= 32) return `at least ${Math.ceil((oz / 16) * 2) / 2} lb`;
+    return `at least ${Math.ceil(oz)} oz`;
+  }
+  if (need.family === "volume") {
+    const floz = need.base / 29.5735;
+    if (need.base < 14.787) return "a small amount: check your spice shelf, buy a jar if you have none";
+    if (need.base < 4 * 14.787) return `at least ${Math.ceil(need.base / 14.787)} tbsp`;
+    if (floz <= 8) return `at least ${Math.ceil((need.base / 236.588) * 4) / 4} cup`;
+    if (floz >= 32) return `at least ${Math.ceil((floz / 32) * 2) / 2} qt`;
+    return `at least ${Math.ceil(floz)} fl oz`;
+  }
+  if (need.family === "count") {
+    const n = Math.ceil(need.base - 1e-9);
+    return n >= 12 ? `at least ${n} (about ${Math.ceil(n / 12)} dozen)` : `at least ${n}`;
+  }
+  return null;
 }
 
 // ---------- storage (kept on this computer; the page still works if the browser blocks it) ----------
@@ -229,20 +224,8 @@ function el(tag, text, cls) { const n = document.createElement(tag); if (text !=
 
 let lines = [];                              // the recipe, as checked
 let pantry = load("rsa-pantry", {});         // key -> true (at home) | "more" (buy more) | false (need)
-let prices = load("rsa-price-rows", []);     // [{item, pack, price}]
 let wants = load("rsa-wants", []);           // plain list, no recipe
 
-// Turn a price row into something the picker understands. Returns null if it cannot be read.
-function toPriceRow(item, pack, price) {
-  const size = parseAmount(pack.trim());
-  if (!item.trim() || !size || size.family === "pack" || !Number.isFinite(price) || price <= 0) return null;
-  return { item: item.trim(), key: normName(item), pack: pack.trim(), price, family: size.family, base: size.base };
-}
-function priceRows() {
-  return prices.map(p => toPriceRow(p.item, p.pack, p.price)).filter(Boolean);
-}
-
-// ---------- the three sections ----------
 function renderHave() {
   const body = $("have-body");
   body.textContent = "";
@@ -274,15 +257,15 @@ function setAnswer(key, value) {
 function renderList() {
   const body = $("list-body");
   body.textContent = "";
-  const packs = priceRows();
-  let total = 0;
   let rows = 0;
+  let unanswered = 0;
 
   // Repeated ingredients are added together, so two recipes do not buy eggs twice.
   const needs = new Map();
   lines.forEach(line => {
     const answer = pantry[line.key];
-    if (answer === undefined || answer === true) return;
+    if (answer === undefined) { unanswered++; return; }
+    if (answer === true) return;
     const id = line.key + "|" + line.family;
     const n = needs.get(id) || { name: line.name, key: line.key, family: line.family, base: 0, amountText: [], grams: null, unparsed: !line.parsed };
     n.base += line.base || 0;
@@ -296,46 +279,29 @@ function renderList() {
     const tr = el("tr", undefined, "dotted");
     tr.append(el("td", n.name), el("td", n.amountText.join(" + ") || "-"));
     if (n.unparsed) {
-      tr.append(el("td", "Check by hand: amount not readable", "pill warn"), el("td", "-"));
+      tr.append(el("td", "Check by hand: amount not readable", "pill warn"));
+    } else if (n.family === "pack") {
+      tr.append(el("td", "Check by hand: counted in packages", "pill warn"));
+    } else if (n.grams && n.family !== "mass") {
+      // A spoon or cup measure with grams in brackets is bought by weight.
+      tr.append(el("td", storeAmount({ family: "mass", base: n.grams * 1 }) || "-"));
     } else {
-      // A spoon or cup measure is matched to a weight pack only when grams are typed in brackets.
-      let need = { family: n.family, base: n.base };
-      if (n.grams && n.family !== "mass") need = { family: "mass", base: n.grams };
-      const options = packs.filter(p => p.key === n.key);
-      if (options.length === 0) {
-        tr.append(el("td", "No price yet", "pill"), el("td", "-"));
-      } else {
-        const pick = pickPacks(need, options);
-        if (pick.status === "OK") {
-          total += pick.total;
-          tr.append(el("td", `${pick.count} × ${pick.pack}`), el("td", `$${pick.total.toFixed(2)}`));
-        } else {
-          tr.append(el("td", `${pick.status}: ${pick.reason}`, "pill warn"), el("td", "-"));
-        }
-      }
+      tr.append(el("td", storeAmount({ family: n.family, base: n.base }) || "-"));
     }
     body.append(tr);
   });
 
-  // Things added by hand: one of the cheapest package that has a price.
+  // Things added by hand: one of each.
   wants.forEach(item => {
     rows++;
-    const key = normName(item);
     const tr = el("tr", undefined, "dotted");
-    tr.append(el("td", item), el("td", "1"));
-    const options = packs.filter(p => p.key === key).sort((a, b) => a.price - b.price);
-    if (options.length === 0) {
-      tr.append(el("td", "No price yet", "pill"), el("td", "-"));
-    } else {
-      total += options[0].price;
-      tr.append(el("td", `1 × ${options[0].pack}`), el("td", `$${options[0].price.toFixed(2)}`));
-    }
+    tr.append(el("td", item), el("td", "-"), el("td", "1"));
     body.append(tr);
   });
 
-  $("total").textContent = rows === 0
-    ? "Nothing to buy right now. The cupboard is full."
-    : `Estimated total for the items with a price: $${total.toFixed(2)}`;
+  $("list-note").textContent = unanswered > 0
+    ? `${unanswered} ingredient(s) still need an answer above. Answer them, then this list is complete.`
+    : (rows === 0 ? "Nothing to buy right now. The cupboard is full." : "Every ingredient has an answer. Shop from this list.");
 }
 
 function renderAll() {
@@ -344,20 +310,37 @@ function renderAll() {
 }
 
 $("check").onclick = () => {
-  lines = $("recipe").value.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(raw => {
-    const parsed = parseAmount(raw);
-    const grams = raw.match(/\((\d+(?:\.\d+)?)\s*g\)/i);
-    const name = parsed ? parsed.name.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim() : raw;
+  lines = $("recipe").value.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(original => {
+    const c = cleanLine(original);
+    const parsed = parseAmount(c.text);
+    const grams = c.text.match(/\((\d+(?:\.\d+)?)\s*g\)/i);
+    const rawName = parsed ? parsed.name.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim() : c.text;
+    const display = rawName.replace(/^[,\s]+/, "").replace(/,.*$/, "").trim() || c.text;   // a name is never empty
     return {
-      raw, name: name.replace(/,.*$/, "").trim() || raw, key: normName(name), parsed: !!parsed,
+      raw: original, name: display, key: normName(display), parsed: !!parsed,
       family: parsed && parsed.family, base: parsed && parsed.base, amountText: parsed && parsed.amountText,
-      grams: grams ? Number(grams[1]) : null
+      grams: grams ? Number(grams[1]) : null, note: c.note
     };
   });
-  $("have-card").hidden = lines.length === 0;
-  $("list-card").hidden = lines.length === 0;
+  save("rsa-recipe", $("recipe").value);
+  updateVisibility();
   renderAll();
 };
+
+// Typed fractions (½ ¼ ¾) become 1/2 1/4 3/4, and a range like "2-3" uses the higher number.
+const FRACTION_CHARS = { "½": "1/2", "¼": "1/4", "¾": "3/4", "⅓": "1/3", "⅔": "2/3" };
+function cleanLine(raw) {
+  let s = raw.replace(/(\d)\s*([½¼¾⅓⅔])/g, (m, d, f) => `${d} ${FRACTION_CHARS[f]}`).replace(/[½¼¾⅓⅔]/g, f => FRACTION_CHARS[f]);
+  let note = "";
+  const range = s.match(/^(\d+(?:\.\d+)?)\s*(?:-|–|to)\s*(\d+(?:\.\d+)?)\s*(.*)$/);
+  if (range) { s = `${range[2]} ${range[3]}`.trim(); note = `you typed ${range[1]} to ${range[2]}; the higher number is used`; }
+  return { text: s, note };
+}
+
+function updateVisibility() {
+  $("list-card").hidden = lines.length === 0 && wants.length === 0;
+  $("have-card").hidden = lines.length === 0;
+}
 
 $("sample").onclick = () => {
   $("recipe").value = "1 1/2 cups milk\n2 eggs\n2 tbsp butter\n1/8 tsp nutmeg\n1 cup all-purpose flour\n3/4 cup rice (150 g)";
@@ -385,59 +368,19 @@ function addWant() {
   wants.push(text);
   save("rsa-wants", wants);
   $("want-input").value = "";
+  updateVisibility();
   renderWants();
   renderList();
 }
 $("want-add").onclick = addWant;
 $("want-input").addEventListener("keydown", e => { if (e.key === "Enter") addWant(); });
-$("want-clear").onclick = () => { wants = []; save("rsa-wants", wants); renderWants(); renderList(); };
+$("want-clear").onclick = () => { wants = []; save("rsa-wants", wants); updateVisibility(); renderWants(); renderList(); };
 
-// Store prices
-function renderPrices() {
-  const body = $("price-body");
-  body.textContent = "";
-  prices.forEach((p, i) => {
-    const tr = el("tr", undefined, "dotted");
-    const ok = toPriceRow(p.item, p.pack, p.price);
-    tr.append(el("td", p.item), el("td", p.pack), el("td", `$${Number(p.price).toFixed(2)}`));
-    const td = el("td");
-    if (!ok) td.append(el("span", "Size not readable", "pill warn"));
-    const del = el("button", "Remove", "soft tiny");
-    del.onclick = () => { prices.splice(i, 1); save("rsa-price-rows", prices); renderPrices(); renderList(); };
-    td.append(del);
-    tr.append(td);
-    body.append(tr);
-  });
-  $("price-empty").textContent = prices.length === 0 ? "No prices typed in yet." : "";
-}
-
-$("price-add").onclick = () => {
-  const item = $("price-item").value.trim();
-  const pack = $("price-pack").value.trim();
-  const cost = Number($("price-cost").value);
-  const err = $("price-error");
-  if (!item) { err.textContent = "Please type the item name."; return; }
-  if (!toPriceRow(item, pack, cost)) { err.textContent = "Check the package size (for example 16 oz or 1 gal) and the price."; return; }
-  prices.push({ item, pack, price: cost });
-  save("rsa-price-rows", prices);
-  err.textContent = "";
-  $("price-item").value = ""; $("price-pack").value = ""; $("price-cost").value = "";
-  $("price-item").focus();
-  renderPrices();
-  renderList();
-};
-
-$("price-download").onclick = () => {
-  const rows = ["item,pack_size,price", ...prices.map(p => `${p.item},${p.pack},${Number(p.price).toFixed(2)}`)];
-  const blob = new Blob([rows.join("\n") + "\n"], { type: "text/csv" });
-  const a = el("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "store_prices.csv";
-  document.body.append(a); a.click(); a.remove();
-};
-
+// Remember the last recipe typed, so a reload does not lose it.
+const savedRecipe = load("rsa-recipe", "");
+if (savedRecipe) { $("recipe").value = savedRecipe; $("check").onclick(); }
 renderWants();
-renderPrices();
+updateVisibility();
 </script>
 </body>
 </html>

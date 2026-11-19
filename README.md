@@ -43,9 +43,12 @@ Never commit a `.env` file or an API key. `.gitignore` blocks them and the other
 
 ## The checker page (index.html)
 Open `index.html` in any web browser. Nothing is installed and nothing is sent anywhere.
-1. Paste a recipe, one ingredient per line.
+1. Paste a recipe (or text copied from a PDF or list), one ingredient per line.
 2. Tap "We have it", "Want more" or "We need it" for each one.
-3. Type store prices into the price section (item, package size, price), or download them as a CSV.
-4. The grocery list shows the cheapest packs that cover each amount, with the estimated total.
+3. The grocery list shows what to buy, in amounts stores sell, like "at least 2 tbsp" or "at least 6 oz". No prices are needed.
+4. Add anything else you want on the list, with no recipe.
 
-Answers and prices are saved in your own browser, not in this repo. Lines measured by spoon or cup but sold by weight need the grams in brackets, like `3/4 cup rice (150 g)`.
+The page only uses amounts; it does not know store prices. The one price shown is a national
+government average for large eggs (January 2026, several months old), labelled on the page.
+Answers and the last recipe are kept in your own browser, not in this repo.
+Lines measured by spoon or cup but sold by weight need the grams in brackets, like `3/4 cup rice (150 g)`.
