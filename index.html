@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Our Kitchen Grocery Book</title>
+<style>
+  :root {
+    --paper:#fbf5e6; --paper-edge:#e9dcbc; --ink:#3b2f2a; --soft:#7a6a5c;
+    --tomato:#c8553d; --sage:#6f8f5e; --butter:#f2c94c; --rule:#cdbd96;
+  }
+  body { margin:0; background:#f3e9d2; color:var(--ink); font:16px/1.55 Georgia, "Times New Roman", serif; }
+  main { max-width:720px; margin:0 auto; padding:20px 16px 48px; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); }
+  header { text-align:center; margin-bottom:12px; }
+  header .ornament { color:var(--sage); letter-spacing:.4em; font-size:.95rem; }
+  h1 { font-size:2rem; margin:4px 0; letter-spacing:.02em; }
+  header p { margin:4px 0 0; color:var(--soft); font-style:italic; }
+  .page { background:var(--paper); border:1px solid var(--paper-edge); border-radius:14px; padding:20px; margin:18px 0; box-shadow:0 3px 0 var(--paper-edge); }
+  .page h2 { font-size:1.4rem; margin:0 0 4px; color:var(--tomato); }
+  .page .hint { color:var(--soft); margin:0 0 12px; font-size:.95rem; }
+  .divider { text-align:center; color:var(--rule); letter-spacing:.5em; margin:6px 0 10px; }
+  textarea, input[type=text], input[type=number] {
+    width:100%; box-sizing:border-box; font:inherit; padding:10px 12px; border:1px solid var(--rule);
+    border-radius:10px; background:#fffdf7; color:var(--ink);
+  }
+  textarea { min-height:130px; }
+  label { display:block; font-size:.9rem; color:var(--soft); margin-bottom:4px; }
+  button {
+    font:inherit; padding:9px 16px; border-radius:999px; border:none; background:var(--sage); color:#fff; cursor:pointer;
+    margin:6px 6px 6px 0; box-shadow:0 2px 0 #4f6b41;
+  }
+  button:active { transform:translateY(1px); box-shadow:none; }
+  button.soft { background:#fff8e6; color:var(--ink); border:1px solid var(--rule); box-shadow:none; }
+  button.tiny { padding:4px 10px; font-size:.85rem; }
+  button:focus-visible { outline:3px solid var(--butter); outline-offset:2px; }
+  .row-actions { white-space:nowrap; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:9px 6px; vertical-align:top; }
+  th { font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; color:var(--soft); border-bottom:2px solid var(--rule); }
+  .dotted td { border-bottom:1px dotted var(--rule); }
+  .status { font-size:.88rem; color:var(--soft); font-style:italic; }
+  .pill { display:inline-block; padding:2px 10px; border-radius:999px; font-size:.82rem; background:#fff1c2; color:var(--ink); }
+  .pill.warn { background:#f8d7cc; }
+  .grocery-title { text-align:center; font-size:1.6rem; margin:0; }
+  .grocery-sub { text-align:center; font-style:italic; color:var(--soft); margin:2px 0 10px; }
+  .box td:first-child::before { content:"\2610\00a0\00a0"; color:var(--ink); }
+  .total { border-top:2px solid var(--rule); margin-top:10px; padding-top:10px; font-weight:bold; }
+  .form-grid { display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px; }
+  .form-grid > div { min-width:0; }
+  .error { color:var(--tomato); margin:6px 0 0; min-height:1.2em; }
+  .saved-note { color:var(--sage); font-style:italic; margin-left:6px; }
+  [hidden] { display:none !important; }
+  @media (max-width:560px) { .form-grid { grid-template-columns:1fr; } h1 { font-size:1.6rem; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="ornament">&#10047; &#10047; &#10047;</div>
+    <h1>Our Kitchen Grocery Book</h1>
+    <p>Paste a recipe, say what is already at home, and see what to buy.</p>
+  </header>
+
+  <section class="page" aria-labelledby="h-recipe">
+    <h2 id="h-recipe">1. Add a recipe</h2>
+    <p class="hint">One ingredient per line, with the amount first. For example: <em>1 1/2 cups milk</em>, <em>2 eggs</em>, <em>3 tbsp butter</em>. If a line is measured by spoon or cup but sold by weight, add the grams in brackets: <em>3/4 cup rice (150 g)</em>.</p>
+    <label for="recipe">Ingredients</label>
+    <textarea id="recipe" placeholder="1 1/2 cups milk&#10;2 eggs&#10;2 tbsp butter"></textarea>
+    <p>
+      <button id="check">Check this recipe</button>
+      <button class="soft" id="sample">Use the example</button>
+    </p>
+  </section>
+
+  <section class="page" id="have-card" hidden aria-labelledby="h-have">
+    <h2 id="h-have">2. What do we already have?</h2>
+    <p class="hint">Tap one answer for each ingredient. Your answers are kept on this computer.</p>
+    <table>
+      <thead><tr><th>Ingredient</th><th>Amount</th><th>At home</th></tr></thead>
+      <tbody id="have-body"></tbody>
+    </table>
+    <p><button class="soft tiny" id="clear-pantry">Clear all answers</button></p>
+  </section>
+
+  <section class="page" id="list-card" hidden aria-labelledby="h-list">
+    <p class="grocery-title" id="h-list">Grocery list</p>
+    <p class="grocery-sub">The cheapest packs that cover what the recipe needs</p>
+    <table class="box">
+      <thead><tr><th>Item</th><th>Amount</th><th>Buy</th><th>Cost</th></tr></thead>
+      <tbody id="list-body"></tbody>
+    </table>
+    <p class="total" id="total"></p>
+  </section>
+
+  <section class="page" aria-labelledby="h-wants">
+    <h2 id="h-wants">3. Things we want or need</h2>
+    <p class="hint">Add anything at all, with no recipe needed. It goes on the grocery list.</p>
+    <label for="want-input">Item</label>
+    <input id="want-input" type="text" placeholder="for example: dish soap">
+    <p><button id="want-add">Add to list</button></p>
+    <ul id="want-list" style="padding-left:20px"></ul>
+    <p><button class="soft tiny" id="want-clear">Clear this list</button></p>
+  </section>
+
+  <section class="page" aria-labelledby="h-prices">
+    <h2 id="h-prices">4. Store prices</h2>
+    <p class="hint">Type in what you see on a store's shelf or website. Use the size printed on the package, like <em>16 oz</em>, <em>1 gal</em> or <em>1 dozen</em>. Example prices are not real.</p>
+    <div class="form-grid">
+      <div><label for="price-item">Item</label><input id="price-item" type="text" placeholder="whole milk"></div>
+      <div><label for="price-pack">Package size</label><input id="price-pack" type="text" placeholder="1 gal"></div>
+      <div><label for="price-cost">Price ($)</label><input id="price-cost" type="number" min="0" step="0.01" placeholder="4.50"></div>
+    </div>
+    <p class="error" id="price-error"></p>
+    <p>
+      <button id="price-add">Add price</button>
+      <button class="soft" id="price-download">Download prices (CSV)</button>
+    </p>
+    <table>
+      <thead><tr><th>Item</th><th>Package</th><th>Price</th><th></th></tr></thead>
+      <tbody id="price-body"></tbody>
+    </table>
+    <p class="status" id="price-empty"></p>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+// ---------- units: each amount becomes one base unit per family (grams, millilitres, or each) ----------
+const UNITS = {
+  "g": ["mass", 1], "gram": ["mass", 1], "grams": ["mass", 1], "kg": ["mass", 1000],
+  "oz": ["mass", 28.3495], "ounce": ["mass", 28.3495], "ounces": ["mass", 28.3495],
+  "lb": ["mass", 453.592], "lbs": ["mass", 453.592], "pound": ["mass", 453.592], "pounds": ["mass", 453.592],
+  "ml": ["volume", 1], "l": ["volume", 1000], "liter": ["volume", 1000], "liters": ["volume", 1000],
+  "tsp": ["volume", 4.929], "teaspoon": ["volume", 4.929], "teaspoons": ["volume", 4.929],
+  "tbsp": ["volume", 14.787], "tablespoon": ["volume", 14.787], "tablespoons": ["volume", 14.787],
+  "cup": ["volume", 236.588], "cups": ["volume", 236.588],
+  "fl oz": ["volume", 29.5735], "pint": ["volume", 473.176], "pints": ["volume", 473.176],
+  "qt": ["volume", 946.353], "quart": ["volume", 946.353],
+  "gal": ["volume", 3785.41], "gallon": ["volume", 3785.41], "gallons": ["volume", 3785.41],
+  "each": ["count", 1], "clove": ["count", 1], "cloves": ["count", 1], "egg": ["count", 1], "eggs": ["count", 1],
+  "slice": ["count", 1], "slices": ["count", 1], "pod": ["count", 1], "pods": ["count", 1]
+};
+const UNIT_NAMES = Object.keys(UNITS).sort((a, b) => b.length - a.length);
+
+// Words that count packages, bunches or cans. A dozen is really 12 eggs; the others
+// cannot be turned into a firm amount, so they are flagged for you to check.
+const PACK_WORDS = /^(dozen|bunch|bunches|can|cans|bag|bags|pack|packs|jar|jars|bottle|bottles|box|boxes|head|heads|package|packages|ct|count)\b/i;
+
+// "2 1/4" -> 2.25 ; "1/3" -> 0.333 ; "2" -> 2. Returns null if not a number.
+function parseNumber(text) {
+  const t = text.trim();
+  const m = t.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  if (m) return Number(m[1]) + Number(m[2]) / Number(m[3]);
+  const f = t.match(/^(\d+)\/(\d+)$/);
+  if (f) return Number(f[1]) / Number(f[2]);
+  if (/^\d+(\.\d+)?$/.test(t)) return Number(t);
+  return null;
+}
+
+// "1 1/2 cups milk" -> {family, base, name, amountText}. "2 eggs" counts as each.
+// Returns null when the line does not start with an amount.
+function parseAmount(line) {
+  const s = line.trim().replace(/\s+/g, " ");
+  const qty = s.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(.*)$/);
+  if (!qty) return null;
+  const amount = parseNumber(qty[1]);
+  if (amount === null) return null;
+  const rest = qty[2];
+  const lower = rest.toLowerCase();
+  const dozen = lower.match(/^dozen\b\s*(.*)$/);
+  if (dozen) return { family: "count", base: amount * 12, name: dozen[1], amountText: `${qty[1]} dozen` };
+  if (PACK_WORDS.test(rest)) {
+    const word = rest.match(PACK_WORDS)[1];
+    return { family: "pack", base: amount, name: rest.slice(word.length).trim(), amountText: `${qty[1]} ${word}` };
+  }
+  // Only the part before a comma or bracket is checked for the unit: "tsp, plus more to taste" is a teaspoon.
+  const head = lower.split(/[,(]/)[0].trim();
+  for (const unit of UNIT_NAMES) {
+    if (head === unit || head.startsWith(unit + " ")) {
+      const [family, factor] = UNITS[unit];
+      const after = rest.slice(rest.toLowerCase().indexOf(unit) + unit.length).trim();
+      return { family, base: amount * factor, name: after, amountText: `${qty[1]} ${unit}` };
+    }
+  }
+  return { family: "count", base: amount, name: rest, amountText: qty[1] };
+}
+
+// Same name on both sides of the price list: lower case, no brackets, no size words,
+// and plurals folded ("eggs" -> "egg", "tomatoes" -> "tomato", "pitas" -> "pita").
+function normName(text) {
+  let s = text.toLowerCase().replace(/\([^)]*\)/g, " ").replace(/,.*$/, " ");
+  s = s.replace(/\b(large|fresh|medium|small|whole)\b/g, " ").replace(/[^a-z\s-]/g, " ").replace(/\s+/g, " ").trim();
+  const words = s.split(" ");
+  const last = words.pop() || "";
+  let fixed = last;
+  if (/oes$/.test(last)) fixed = last.slice(0, -2);
+  else if (/s$/.test(last) && !/ss$/.test(last) && last.length > 3) fixed = last.slice(0, -1);
+  return [...words, fixed].join(" ").trim();
+}
+
+// The cheapest total that covers the amount; leftovers count. Ties become ASK.
+function pickPacks(need, packs) {
+  if (need.family === "pack") return { status: "CHECK", reason: "counted in packages; check the amount by hand" };
+  const usable = packs.filter(p => p.family === need.family);
+  if (usable.length === 0) return { status: "CHECK", reason: "the store sells this by a different measure" };
+  const options = usable.map(p => {
+    const count = Math.max(1, Math.ceil(need.base / p.base - 1e-9));
+    return { pack: p.pack, count, total: Math.round(count * p.price * 100) / 100, leftover: count * p.base - need.base };
+  }).sort((a, b) => a.total - b.total || a.count - b.count || a.leftover - b.leftover);
+  const best = options[0];
+  const tied = options.filter(o => o.total === best.total && o.count === best.count);
+  if (tied.length > 1) return { status: "ASK", reason: "two packs cost the same: " + tied.map(t => t.pack).join(" or ") };
+  return { status: "OK", ...best };
+}
+
+// ---------- storage (kept on this computer; the page still works if the browser blocks it) ----------
+function load(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+}
+function save(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* nothing is remembered */ }
+}
+
+// ---------- page ----------
+const $ = id => document.getElementById(id);
+function el(tag, text, cls) { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (cls) n.className = cls; return n; }
+
+let lines = [];                              // the recipe, as checked
+let pantry = load("rsa-pantry", {});         // key -> true (at home) | "more" (buy more) | false (need)
+let prices = load("rsa-price-rows", []);     // [{item, pack, price}]
+let wants = load("rsa-wants", []);           // plain list, no recipe
+
+// Turn a price row into something the picker understands. Returns null if it cannot be read.
+function toPriceRow(item, pack, price) {
+  const size = parseAmount(pack.trim());
+  if (!item.trim() || !size || size.family === "pack" || !Number.isFinite(price) || price <= 0) return null;
+  return { item: item.trim(), key: normName(item), pack: pack.trim(), price, family: size.family, base: size.base };
+}
+function priceRows() {
+  return prices.map(p => toPriceRow(p.item, p.pack, p.price)).filter(Boolean);
+}
+
+// ---------- the three sections ----------
+function renderHave() {
+  const body = $("have-body");
+  body.textContent = "";
+  const labels = { true: "At home", more: "At home, buying more", false: "Need to buy" };
+  lines.forEach(line => {
+    const tr = el("tr", undefined, "dotted");
+    const state = pantry[line.key];
+    tr.append(el("td", line.name), el("td", line.amountText || line.raw));
+    const td = el("td", undefined, "row-actions");
+    const haveBtn = el("button", "We have it", "tiny");
+    const moreBtn = el("button", "Want more", "soft tiny");
+    const needBtn = el("button", "We need it", "soft tiny");
+    haveBtn.onclick = () => setAnswer(line.key, true);
+    moreBtn.onclick = () => setAnswer(line.key, "more");
+    needBtn.onclick = () => setAnswer(line.key, false);
+    td.append(haveBtn, moreBtn, needBtn);
+    td.append(el("div", state === undefined ? "Not answered yet" : labels[state], "status"));
+    tr.append(td);
+    body.append(tr);
+  });
+}
+
+function setAnswer(key, value) {
+  pantry[key] = value;
+  save("rsa-pantry", pantry);
+  renderAll();
+}
+
+function renderList() {
+  const body = $("list-body");
+  body.textContent = "";
+  const packs = priceRows();
+  let total = 0;
+  let rows = 0;
+
+  // Repeated ingredients are added together, so two recipes do not buy eggs twice.
+  const needs = new Map();
+  lines.forEach(line => {
+    const answer = pantry[line.key];
+    if (answer === undefined || answer === true) return;
+    const id = line.key + "|" + line.family;
+    const n = needs.get(id) || { name: line.name, key: line.key, family: line.family, base: 0, amountText: [], grams: null, unparsed: !line.parsed };
+    n.base += line.base || 0;
+    if (line.amountText) n.amountText.push(line.amountText);
+    if (line.grams) n.grams = (n.grams || 0) + line.grams;
+    needs.set(id, n);
+  });
+
+  needs.forEach(n => {
+    rows++;
+    const tr = el("tr", undefined, "dotted");
+    tr.append(el("td", n.name), el("td", n.amountText.join(" + ") || "-"));
+    if (n.unparsed) {
+      tr.append(el("td", "Check by hand: amount not readable", "pill warn"), el("td", "-"));
+    } else {
+      // A spoon or cup measure is matched to a weight pack only when grams are typed in brackets.
+      let need = { family: n.family, base: n.base };
+      if (n.grams && n.family !== "mass") need = { family: "mass", base: n.grams };
+      const options = packs.filter(p => p.key === n.key);
+      if (options.length === 0) {
+        tr.append(el("td", "No price yet", "pill"), el("td", "-"));
+      } else {
+        const pick = pickPacks(need, options);
+        if (pick.status === "OK") {
+          total += pick.total;
+          tr.append(el("td", `${pick.count} × ${pick.pack}`), el("td", `$${pick.total.toFixed(2)}`));
+        } else {
+          tr.append(el("td", `${pick.status}: ${pick.reason}`, "pill warn"), el("td", "-"));
+        }
+      }
+    }
+    body.append(tr);
+  });
+
+  // Things added by hand: one of the cheapest package that has a price.
+  wants.forEach(item => {
+    rows++;
+    const key = normName(item);
+    const tr = el("tr", undefined, "dotted");
+    tr.append(el("td", item), el("td", "1"));
+    const options = packs.filter(p => p.key === key).sort((a, b) => a.price - b.price);
+    if (options.length === 0) {
+      tr.append(el("td", "No price yet", "pill"), el("td", "-"));
+    } else {
+      total += options[0].price;
+      tr.append(el("td", `1 × ${options[0].pack}`), el("td", `$${options[0].price.toFixed(2)}`));
+    }
+    body.append(tr);
+  });
+
+  $("total").textContent = rows === 0
+    ? "Nothing to buy right now. The cupboard is full."
+    : `Estimated total for the items with a price: $${total.toFixed(2)}`;
+}
+
+function renderAll() {
+  renderHave();
+  renderList();
+}
+
+$("check").onclick = () => {
+  lines = $("recipe").value.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(raw => {
+    const parsed = parseAmount(raw);
+    const grams = raw.match(/\((\d+(?:\.\d+)?)\s*g\)/i);
+    const name = parsed ? parsed.name.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim() : raw;
+    return {
+      raw, name: name.replace(/,.*$/, "").trim() || raw, key: normName(name), parsed: !!parsed,
+      family: parsed && parsed.family, base: parsed && parsed.base, amountText: parsed && parsed.amountText,
+      grams: grams ? Number(grams[1]) : null
+    };
+  });
+  $("have-card").hidden = lines.length === 0;
+  $("list-card").hidden = lines.length === 0;
+  renderAll();
+};
+
+$("sample").onclick = () => {
+  $("recipe").value = "1 1/2 cups milk\n2 eggs\n2 tbsp butter\n1/8 tsp nutmeg\n1 cup all-purpose flour\n3/4 cup rice (150 g)";
+  $("check").onclick();
+};
+
+$("clear-pantry").onclick = () => { pantry = {}; save("rsa-pantry", pantry); renderAll(); };
+
+// Things we want
+function renderWants() {
+  const ul = $("want-list");
+  ul.textContent = "";
+  if (wants.length === 0) { ul.append(el("li", "Nothing added yet.", "status")); return; }
+  wants.forEach((item, i) => {
+    const li = el("li", item + " ");
+    const del = el("button", "Remove", "soft tiny");
+    del.onclick = () => { wants.splice(i, 1); save("rsa-wants", wants); renderWants(); renderList(); };
+    li.append(del);
+    ul.append(li);
+  });
+}
+function addWant() {
+  const text = $("want-input").value.trim();
+  if (!text) return;
+  wants.push(text);
+  save("rsa-wants", wants);
+  $("want-input").value = "";
+  renderWants();
+  renderList();
+}
+$("want-add").onclick = addWant;
+$("want-input").addEventListener("keydown", e => { if (e.key === "Enter") addWant(); });
+$("want-clear").onclick = () => { wants = []; save("rsa-wants", wants); renderWants(); renderList(); };
+
+// Store prices
+function renderPrices() {
+  const body = $("price-body");
+  body.textContent = "";
+  prices.forEach((p, i) => {
+    const tr = el("tr", undefined, "dotted");
+    const ok = toPriceRow(p.item, p.pack, p.price);
+    tr.append(el("td", p.item), el("td", p.pack), el("td", `$${Number(p.price).toFixed(2)}`));
+    const td = el("td");
+    if (!ok) td.append(el("span", "Size not readable", "pill warn"));
+    const del = el("button", "Remove", "soft tiny");
+    del.onclick = () => { prices.splice(i, 1); save("rsa-price-rows", prices); renderPrices(); renderList(); };
+    td.append(del);
+    tr.append(td);
+    body.append(tr);
+  });
+  $("price-empty").textContent = prices.length === 0 ? "No prices typed in yet." : "";
+}
+
+$("price-add").onclick = () => {
+  const item = $("price-item").value.trim();
+  const pack = $("price-pack").value.trim();
+  const cost = Number($("price-cost").value);
+  const err = $("price-error");
+  if (!item) { err.textContent = "Please type the item name."; return; }
+  if (!toPriceRow(item, pack, cost)) { err.textContent = "Check the package size (for example 16 oz or 1 gal) and the price."; return; }
+  prices.push({ item, pack, price: cost });
+  save("rsa-price-rows", prices);
+  err.textContent = "";
+  $("price-item").value = ""; $("price-pack").value = ""; $("price-cost").value = "";
+  $("price-item").focus();
+  renderPrices();
+  renderList();
+};
+
+$("price-download").onclick = () => {
+  const rows = ["item,pack_size,price", ...prices.map(p => `${p.item},${p.pack},${Number(p.price).toFixed(2)}`)];
+  const blob = new Blob([rows.join("\n") + "\n"], { type: "text/csv" });
+  const a = el("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "store_prices.csv";
+  document.body.append(a); a.click(); a.remove();
+};
+
+renderWants();
+renderPrices();
+</script>
+</body>
+</html>

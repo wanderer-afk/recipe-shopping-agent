@@ -40,3 +40,12 @@ prices from any store's website, because store terms usually forbid automated co
 
 ## Secrets and personal data
 Never commit a `.env` file or an API key. `.gitignore` blocks them and the other personal files.
+
+## The checker page (index.html)
+Open `index.html` in any web browser. Nothing is installed and nothing is sent anywhere.
+1. Paste a recipe, one ingredient per line.
+2. Tap "We have it", "Want more" or "We need it" for each one.
+3. Type store prices into the price section (item, package size, price), or download them as a CSV.
+4. The grocery list shows the cheapest packs that cover each amount, with the estimated total.
+
+Answers and prices are saved in your own browser, not in this repo. Lines measured by spoon or cup but sold by weight need the grams in brackets, like `3/4 cup rice (150 g)`.
