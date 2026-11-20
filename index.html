@@ -445,7 +445,8 @@ const CUP_GRAMS = {
   "breadcrumb": 108, "panko": 60, "cornmeal": 138, "cocoa": 85, "raisin": 150, "walnut": 120, "pecan": 110
 };
 // Lines that are headings or website text, not food.
-const NOT_FOOD = /^(for (the )?[\w\s]+|ingredients?|to serve|garnish|topping|jump to|print|advertisement|servings?|rate|pin|save|share|subscribe|notes?|directions|method)s?:?$/i;
+const NOT_FOOD = /^(for (the )?[\w\s]+|ingredients?|to serve|garnish|topping|jump to|print|advertisement|servings?|rate|pin|save|share|subscribe|notes?|directions|method|instructions?|nutrition|yield|leftovers?)s?:?$/i;
+const METHOD_WORDS = /\b(bake|preheat|oven|minutes?|mins?|until|simmer|stir|serve|mix|combine|add|whisk|heat|cook|pour|place|season|cover|drain|boil|fry|servings?|yield|calories|refrigerat\w*|freez\w*|store|leftover\w*|step|jump to|instructions)\b/i;
 
 function parseRecipeText(text, source) {
   return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
@@ -453,8 +454,9 @@ function parseRecipeText(text, source) {
     if (l.indexOf("|") === -1) return l;
     const cols = l.split("|").map(c => c.trim());
     if (cols[0].toLowerCase() === "item" || /^format/i.test(cols[0])) return "";
-    return cols[1] ? cols[1] + " " + cols[0] : cols[0];
-  }).filter(Boolean).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l)).filter(l => /^\d|^[½¼¾⅓⅔]/.test(l) || !/(bake|preheat|oven|minutes?|until|simmer|stir|serve|mix|combine)/i.test(l)).map(original => {
+    // "2 tbsp + 1/4 tsp" is one amount in this table: keep the first part.
+    return cols[1] ? cols[1].split(" + ")[0] + " " + cols[0] : cols[0];
+  }).filter(Boolean).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1)).map(original => {
     const c = cleanLine(original);
     const parsed = parseAmount(c.text);
     const grams = c.text.match(/\((\d+(?:\.\d+)?)\s*g\)/i);

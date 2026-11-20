@@ -23,6 +23,8 @@ It can also answer questions about a recipe with a small AI agent that runs on y
 | `sample_items.csv` | 12 rows from the staples list, as a small example. |
 | `pantry.example.json` | A blank-style pantry list. Copy it to `pantry.json` to use it. |
 | `requirements.txt` | Python packages needed to rebuild the PDFs. |
+| `report.pdf` | The project report: the problem, how it works, the agent loop diagram, test results, and limits. |
+| `make_report.py` | Rebuilds report.pdf. |
 | `store_prices.example.csv` | Made-up prices showing the format for your own price file. Not real. |
 | `LICENSE` | MIT license. |
 
@@ -75,7 +77,7 @@ pip install -r requirements.txt
   Do not use them for shopping or budgeting.
 - **One price is checked:** eggs, large Grade A, about $2.58 per dozen. This is the US Bureau of
   Labor Statistics national average for January 2026, so it is several months old and local prices differ.
-- **The checker page does not need prices.** It tells you the amount to buy, not the cost.
+- **The grocery amounts do not need prices.** The page shows the amount to buy. It also shows a made-up price guess beside each item, labelled NOT REAL, because you asked for one.
 - **To use your own prices**, type them into a CSV with the columns `item,pack_size,price`, using the size
   printed on the package. Prices you type in stay in your own browser or your own files.
 - **Store websites are not scraped.** Most stores forbid automated collection of their prices and catalogues
@@ -118,7 +120,7 @@ Other local models can be chosen with the `OLLAMA_MODEL` setting.
 ## Limits
 - The AI step has been tested on one question only. Small local models can pick the wrong tool.
 - Name matching is by plain text. "Milk" and "whole milk" match, but a different word for the same food may not.
-- Packs counted in bunches, cans or dozens are flagged for you to check, except dozen eggs.
+- Bunches, cans, bags and rolls are counted as whole items (for example 'at least 1' bunch or 2 cans). Nothing is guessed about their weight.
 - The page has been tested in a desktop browser. It has not been tested on a phone.
 
 ## Files and privacy
