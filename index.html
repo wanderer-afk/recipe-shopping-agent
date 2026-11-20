@@ -325,24 +325,39 @@ function renderAll() {
   renderList();
 }
 
-$("check").onclick = () => {
+// Reads the recipe box into lines. Runs as you type, and again when you press Check.
+// Only pressing Check clears old answers when the recipe is a different one.
+function readRecipeBox() {
   lines = $("recipe").value.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(original => {
     const c = cleanLine(original);
     const parsed = parseAmount(c.text);
     const grams = c.text.match(/\((\d+(?:\.\d+)?)\s*g\)/i);
     const rawName = parsed ? parsed.name.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim() : c.text;
     const display = rawName.replace(/^[,\s]+/, "").replace(/,.*$/, "").trim() || c.text;   // a name is never empty
+    // A line with no amount ("milk") counts as one, and says so.
+    const noAmount = !parsed;
     return {
-      raw: original, name: display, key: normName(display), parsed: !!parsed,
-      family: parsed && parsed.family, base: parsed && parsed.base, amountText: parsed && parsed.amountText,
+      raw: original, name: display, key: normName(display), parsed: true,
+      family: noAmount ? "count" : parsed.family,
+      base: noAmount ? 1 : parsed.base,
+      amountText: noAmount ? "no amount typed (1 assumed)" : parsed.amountText,
       grams: grams ? Number(grams[1]) : null, note: c.note
     };
   });
-  // A different recipe starts with fresh answers, so an old "We have it" cannot hide an item.
-  if ($("recipe").value !== load("rsa-recipe", "")) { pantry = {}; save("rsa-pantry", pantry); }
+  $("list-card").hidden = lines.length === 0 && wants.length === 0;
+  $("have-card").hidden = lines.length === 0;
   save("rsa-recipe", $("recipe").value);
-  updateVisibility();
   renderAll();
+}
+let typingTimer = null;
+$("recipe").addEventListener("input", () => {
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(readRecipeBox, 250);
+});
+$("check").onclick = () => {
+  if ($("recipe").value !== load("rsa-checked", "")) { pantry = {}; save("rsa-pantry", pantry); }
+  save("rsa-checked", $("recipe").value);
+  readRecipeBox();
 };
 
 // Typed fractions (½ ¼ ¾) become 1/2 1/4 3/4, and a range like "2-3" uses the higher number.
