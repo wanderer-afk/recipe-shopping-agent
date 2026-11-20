@@ -144,6 +144,8 @@ const UNITS = {
   "handful": ["count", 1], "handfuls": ["count", 1], "piece": ["count", 1], "pieces": ["count", 1],
   "head": ["count", 1], "heads": ["count", 1], "bunch": ["count", 1], "bunches": ["count", 1],
   "dozen": ["count", 12],
+  "tbs": ["volume", 14.787], "tbl": ["volume", 14.787], "tbls": ["volume", 14.787], "tbs.": ["volume", 14.787], "tbsps": ["volume", 14.787],
+  "c": ["volume", 236.588], "c.": ["volume", 236.588], "stalk": ["count", 1], "stalks": ["count", 1],
   "each": ["count", 1], "clove": ["count", 1], "cloves": ["count", 1], "egg": ["count", 1], "eggs": ["count", 1],
   "slice": ["count", 1], "slices": ["count", 1], "pod": ["count", 1], "pods": ["count", 1]
 };
@@ -227,11 +229,14 @@ function singularWord(w) {
   if (w.length > 3 && /s$/.test(w) && !/ss$/.test(w)) return w.slice(0, -1);
   return w;
 }
+const TYPOS = { chickn: "chicken", chiken: "chicken", onyon: "onion", onions: "onion", vanila: "vanilla", vanilia: "vanilla",
+  potatos: "potato", potatoe: "potato", oliveoil: "olive oil", rise: "rice", tomatos: "tomato", garlc: "garlic", cilantr: "cilantro",
+  flour: "flour", sugr: "sugar", buter: "butter", pepr: "pepper", parmesian: "parmesan", jalapeno: "jalapeno" };
 function normName(text) {
   let s = text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\([^)]*\)/g, " ").replace(/,.*$/, " ");
   s = s.replace(/extra[- ]virgin/g, " ");
   s = s.replace(/[^a-z\s-]/g, " ").replace(/\s+/g, " ").trim();
-  let words = s.split(" ").filter(w => w && !NAME_NOISE.has(w)).map(singularWord);
+  let words = s.split(" ").map(w => TYPOS[w] || w).filter(w => w && !NAME_NOISE.has(w)).map(singularWord);
   let key = words.join(" ").trim();
   if (NAME_SYNONYMS[key]) key = NAME_SYNONYMS[key];
   return key;
@@ -461,7 +466,7 @@ function parseRecipeText(text, source) {
     if (cols[0].toLowerCase() === "item" || /^format/i.test(cols[0])) return "";
     // "2 tbsp + 1/4 tsp" is one amount in this table: keep the first part.
     return cols[1] ? cols[1].split(" + ")[0] + " " + cols[0] : cols[0];
-  }).filter(Boolean).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l) && !WEB_JUNK.test(l)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1)).filter(l => parseAmount(cleanLine(l).text) !== null || /to taste|pinch|dash/i.test(l) || (l.split(" ").length <= 4 && !/[.!?]/.test(l))).map(original => {
+  }).filter(Boolean).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l) && !WEB_JUNK.test(l)).filter(l => !(/^([A-Z][a-zA-Z'\-]*\s?){2,}$/.test(l) && !/\d/.test(l) && l.length < 45)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1)).filter(l => parseAmount(cleanLine(l).text) !== null || /to taste|pinch|dash/i.test(l) || (l.split(" ").length <= 4 && !/[.!?]/.test(l))).map(original => {
     const c = cleanLine(original);
     const parsed = parseAmount(c.text);
     const grams = c.text.match(/\((\d+(?:\.\d+)?)\s*g\)/i);
@@ -475,7 +480,7 @@ function parseRecipeText(text, source) {
     let amountText = noAmount ? (/to taste|pinch|dash/i.test(original) ? "small amount, check your shelf" : "1 (no amount given)") : parsed.amountText;
     // A cup of a dry good is bought by weight (1 cup flour is about 120 g), never as fluid ounces.
     const dryKey = /cheese/.test(key) ? "cheddar" : /\bcooked\b/i.test(original) ? null : Object.keys(CUP_GRAMS).find(k => key === k || key.endsWith(" " + k));
-    if (!noAmount && family === "volume" && dryKey && /cup/i.test(amountText)) {
+    if (!noAmount && family === "volume" && dryKey && /cup|tbsp|tsp|tbs/i.test(amountText)) {
       base = (base / 236.588) * CUP_GRAMS[dryKey];
       family = "mass";
     }
@@ -564,6 +569,7 @@ function cleanLine(raw) {
   raw = raw.replace(/(\d+)\s*(lbs?|pounds?)\s+(\d+(?:\.\d+)?)\s*(oz|ounces?)\b/i, (m, lb, u1, oz) => (Number(lb) + Number(oz) / 16).toFixed(3).replace(/\.?0+$/, "") + " lb");
   let s = raw.replace(/^[\s•·▢☐\-–*]+/, "").replace(/^\d+[.)]\s+/, "").replace(/⁄/g, "/").replace(/^\./, "0.");
   s = s.replace(/\(\s*\d[\d.\/\s]*\s*(?:fl\s*oz|oz|g|kg|ml|l|lbs?)\s*\)/gi, " ").replace(/\s+/g, " ");
+  s = s.replace(/^juice of (\d+)\s+(\w+)/i, "$1 $2");
   s = s.replace(/^(about|approx\.?|approximately|optional:?)\s+/i, "");
   // "ground beef 1 lb" or "ground beef, 3/4 lb" -> "1 lb ground beef" (the amount goes first)
   const endAmount = s.match(/^([^\d].*?)[,\s]+((?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)|[½¼¾⅓⅔⅛⅜⅝⅞])\s*(lbs?|oz|cups?|tsp|tbsp|g|kg|ml|quarts?|pints?|cans?)\.?$/i);

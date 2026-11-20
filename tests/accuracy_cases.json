@@ -1,22 +1,137 @@
 [
-  {"line": "2 cups all-purpose flour", "key": "flour", "family": "mass"},
-  {"line": "1 cup granulated sugar", "key": "granulated sugar", "family": "mass"},
-  {"line": "3 large eggs", "key": "egg", "family": "count"},
-  {"line": "1/2 cup unsalted butter, softened", "key": "butter", "family": "mass"},
-  {"line": "2 cups shredded cheddar cheese", "key": "shredded cheddar", "family": "mass"},
-  {"line": "1 lb. ground beef", "key": "ground beef", "family": "mass"},
-  {"line": "2 cloves garlic, minced", "key": "garlic", "family": "count"},
-  {"line": "1 tsp kosher salt", "key": "salt", "family": "volume"},
-  {"line": "1 tbsp olive oil", "key": "olive oil", "family": "volume"},
-  {"line": "500 ml whole milk", "key": "milk", "family": "volume"},
-  {"line": "250 g butter", "key": "butter", "family": "mass"},
-  {"line": "1 can (14 oz) coconut milk", "key": "canned coconut milk", "family": "count"},
-  {"line": "1 red bell pepper, diced", "key": "bell pepper", "family": "count"},
-  {"line": "2 cups water", "key": "water", "family": "volume"},
-  {"line": "1 bunch cilantro", "key": "cilantro", "family": "count"},
-  {"line": "2 cups cooked rice", "key": "cooked rice", "family": "volume"},
-  {"line": "3/4 cup rice (150 g)", "key": "rice", "family": "mass"},
-  {"line": "2 lb 4 oz chicken thighs", "key": "chicken thigh", "family": "mass"},
-  {"line": "1 gallon freezer bags", "key": "freezer", "family": "count"},
-  {"line": "3 tbsp honey", "key": "honey", "family": "volume"}
+  {
+    "line": "2 cups all-purpose flour",
+    "key": "flour",
+    "family": "mass"
+  },
+  {
+    "line": "1 cup granulated sugar",
+    "key": "granulated sugar",
+    "family": "mass"
+  },
+  {
+    "line": "3 large eggs",
+    "key": "egg",
+    "family": "count"
+  },
+  {
+    "line": "1/2 cup unsalted butter, softened",
+    "key": "butter",
+    "family": "mass"
+  },
+  {
+    "line": "2 cups shredded cheddar cheese",
+    "key": "shredded cheddar",
+    "family": "mass"
+  },
+  {
+    "line": "1 lb. ground beef",
+    "key": "ground beef",
+    "family": "mass"
+  },
+  {
+    "line": "2 cloves garlic, minced",
+    "key": "garlic",
+    "family": "count"
+  },
+  {
+    "line": "1 tsp kosher salt",
+    "key": "salt",
+    "family": "volume"
+  },
+  {
+    "line": "1 tbsp olive oil",
+    "key": "olive oil",
+    "family": "volume"
+  },
+  {
+    "line": "500 ml whole milk",
+    "key": "milk",
+    "family": "volume"
+  },
+  {
+    "line": "250 g butter",
+    "key": "butter",
+    "family": "mass"
+  },
+  {
+    "line": "1 can (14 oz) coconut milk",
+    "key": "canned coconut milk",
+    "family": "count"
+  },
+  {
+    "line": "1 red bell pepper, diced",
+    "key": "bell pepper",
+    "family": "count"
+  },
+  {
+    "line": "2 cups water",
+    "key": "water",
+    "family": "volume"
+  },
+  {
+    "line": "1 bunch cilantro",
+    "key": "cilantro",
+    "family": "count"
+  },
+  {
+    "line": "2 cups cooked rice",
+    "key": "cooked rice",
+    "family": "volume"
+  },
+  {
+    "line": "3/4 cup rice (150 g)",
+    "key": "rice",
+    "family": "mass"
+  },
+  {
+    "line": "2 lb 4 oz chicken thighs",
+    "key": "chicken thigh",
+    "family": "mass"
+  },
+  {
+    "line": "1 gallon freezer bags",
+    "key": "freezer",
+    "family": "count"
+  },
+  {
+    "line": "3 tbsp honey",
+    "key": "honey",
+    "family": "volume"
+  },
+  {
+    "line": "1 c milk",
+    "key": "milk",
+    "family": "volume"
+  },
+  {
+    "line": "2 tbs flour",
+    "key": "flour",
+    "family": "mass"
+  },
+  {
+    "line": "1 onyon, chopped",
+    "key": "onion",
+    "family": "count"
+  },
+  {
+    "line": "2 chickn breast",
+    "key": "chicken breast",
+    "family": "count"
+  },
+  {
+    "line": "juice of 2 limes",
+    "key": "lime",
+    "family": "count"
+  },
+  {
+    "line": "1 medium potatos",
+    "key": "potato",
+    "family": "count"
+  },
+  {
+    "line": "4 cups cooked rise",
+    "key": "cooked rice",
+    "family": "volume"
+  }
 ]
