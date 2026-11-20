@@ -94,6 +94,15 @@ Notes written in our own words from the class lessons. Teacher materials are not
 - **Week 6 (automation):** login details live in saved credentials, not in files. This is why `.env`
   is ignored by git.
 
+## Photo of a recipe (on the live page)
+1. Open the live page (below). Under "Add a recipe", press **Choose a recipe photo** (on a phone this opens the camera).
+2. Wait for the reading to finish. The ingredient lines appear in the recipe box.
+3. Check and fix any lines, then press **Check this recipe**.
+
+The reading runs in your browser with the free Tesseract.js library (loaded from a public CDN the first time).
+The photo is not uploaded to any server. Clear, straight, well-lit photos work best; a handwritten or curved recipe may need typing.
+Tested on a made-up printed recipe: all five ingredient lines were read correctly.
+
 ## Live page
 The checker also runs online with no install: https://wanderer-afk.github.io/recipe-shopping-agent/
 (GitHub Pages serves `index.html` as a web page. Your answers stay in your own browser.)
