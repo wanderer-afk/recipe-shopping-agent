@@ -171,11 +171,11 @@ function parseAmount(line) {
     return { family: "pack", base: amount, name: rest.slice(word.length).trim(), amountText: `${qty[1]} ${word}` };
   }
   // Only the part before a comma or bracket is checked for the unit: "tsp, plus more to taste" is a teaspoon.
-  const head = lower.split(/[,(]/)[0].trim();
+  const head = lower.split(/[,(]/)[0].trim().replace(/^(lbs?|oz|tsp|tbsp|cups?|g|kg|ml|l|qt|pt|gal)\.(?=\s|$)/, "$1");
   for (const unit of UNIT_NAMES) {
     if (head === unit || head.startsWith(unit + " ")) {
       const [family, factor] = UNITS[unit];
-      const after = rest.slice(rest.toLowerCase().indexOf(unit) + unit.length).trim();
+      const after = rest.slice(rest.toLowerCase().indexOf(unit) + unit.length).trim().replace(/^[.\s]+/, "");
       return { family, base: amount * factor, name: after, amountText: `${qty[1]} ${unit}` };
     }
   }
@@ -430,10 +430,12 @@ function ingredientLinesFromScan(text) {
   text = text.replace(/\bIb\b/g, "lb");   // OCR often reads the letter l as capital I
   return text.split(/\r?\n/)
     .map(l => l.replace(/^[\s•·\-–—*|>]+/, "").replace(/\s+/g, " ").trim())
-    // Keep a line if it has an amount anywhere: "Water 1 tbsp" or "2 eggs" both count.
-    .filter(l => /(\d|[½¼¾⅓⅔]|\b(tsp|tbsp|cups?|oz|g|lbs?|pinch|pieces?|leaf|leaves|small|medium|large|slices?|cloves?)\b)/i.test(l) && l.length >= 3 && l.length <= 120)
-    // Drop baking times, temperatures and method sentences: they are not ingredients.
-    .filter(l => !/\b(min|mins|minutes?|hours?|seconds?|bake|preheat|heat|until|serve|mix|stir|cook|oven|degrees?)\b|°|\b[FC]\b/i.test(l));
+    .filter(l => l.length >= 2 && l.length <= 120)
+    // Drop baking times, temperatures, method sentences and section headings.
+    .filter(l => !/\b(min|mins|minutes?|hours?|seconds?|bake|preheat|heat|until|serve|mix|stir|cook|oven|degrees?|method|directions|ingredients|grocery|list)\b|°|\b[FC]\b/i.test(l))
+    // Keep lines with an amount, or a plain item name such as "milk" (but not an all-capitals title).
+    .filter(l => /\d|[½¼¾⅓⅔]|\b(tsp|tbsp|cups?|oz|g|lbs?|pinch|pieces?|leaf|leaves|small|medium|large|slices?|cloves?)\b/i.test(l)
+      || (/^[A-Za-z][A-Za-z ,'()-]{1,40}$/.test(l) && l !== l.toUpperCase()));
 }
 // PDF reader (pdf.js 3.11.174), loaded only when a PDF is chosen, with fingerprints.
 function loadScript(src, integrity) {
@@ -522,7 +524,7 @@ $("photo").addEventListener("change", async () => {
       return;
     }
     addRecipe(found.join("\n"), file.name);
-    status.textContent = `Found ${found.length} ingredient lines. Check them below, fix any mistakes, then press Check this recipe.`;
+    status.textContent = `Found ${found.length} ingredient lines. Check them below, added to your list. To fix one, press Remove on that recipe and type the corrected list.`;
   } catch (err) {
     status.textContent = "That file could not be read. Try another file, or type the list in.";
   }
@@ -572,8 +574,8 @@ $("want-input").addEventListener("keydown", e => { if (e.key === "Enter") addWan
 $("want-clear").onclick = () => { wants = []; save("rsa-wants", wants); updateVisibility(); renderWants(); renderList(); };
 
 // Remember the last recipe typed, so a reload does not lose it.
-const savedRecipe = load("rsa-recipe", "");
-if (savedRecipe) { $("recipe").value = savedRecipe; $("check").onclick(); }
+// Older versions saved the last recipe box; remove that key so it is never added again on reload.
+try { localStorage.removeItem("rsa-recipe"); } catch (e) {}
 renderWants();
 refreshAll();
 updateVisibility();
