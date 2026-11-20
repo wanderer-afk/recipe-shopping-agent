@@ -75,7 +75,7 @@ SYSTEM = (
     + "\n".join(f"- {name}({desc})" for name, (_, desc) in TOOLS.items())
     + "\nReply with JSON only. To use a tool: {\"tool\": \"<name>\", \"args\": {...}}. "
     "When you can answer: {\"final\": \"<answer in plain words>\"}. "
-    "You only read data. You never change lists."
+    "You only read data. You never change lists. Answer every part of the question; if a tool says NO PRICE, say so."
 )
 
 

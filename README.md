@@ -1,4 +1,4 @@
-# Recipe Shopping Checker
+# Our Kitchen Grocery Book (Recipe Shopping Checker)
 
 Paste a recipe, or take a photo of one. Tell the checker what you already have at home, and it gives you a
 grocery list written in amounts stores actually sell, like "at least 2 tbsp" or "at least 6 oz".
@@ -18,7 +18,8 @@ It can also answer questions about a recipe with a small AI agent that runs on y
 | `showcase_prices_EXAMPLE_made_up.csv` / `.pdf` | Made-up example prices for demos. **Not real.** |
 | `make_pdfs.py` | Rebuilds the two PDFs from their CSV files. |
 | `agent.py` | The AI step: a small agent that calls the three tools, using a free model on your own computer (Ollama). |
-| `sample_recipes/Sample Pancakes.md` | A made-up recipe for testing. |
+| `sample_recipes/` | 11 made-up recipes for testing (table format: item, amount, aisle, pantry staple). |
+| `sample_recipe_grocery_lists.pdf` | Buy and check-at-home lists for the sample recipes. |
 | `sample_items.csv` | 12 rows from the staples list, as a small example. |
 | `pantry.example.json` | A blank-style pantry list. Copy it to `pantry.json` to use it. |
 | `requirements.txt` | Python packages needed to rebuild the PDFs. |
@@ -121,5 +122,5 @@ Other local models can be chosen with the `OLLAMA_MODEL` setting.
 - The page has been tested in a desktop browser. It has not been tested on a phone.
 
 ## Files and privacy
-Nothing on the page is sent over the internet. Saved answers and your last recipe are kept in the browser on
+Your recipes, photos and answers are never uploaded. The page loads a free text reader and PDF reader from a public CDN (cdn.jsdelivr.net, cdnjs.cloudflare.com) when you choose a photo or PDF. Saved answers and your last recipe are kept in the browser on
 your own computer.
