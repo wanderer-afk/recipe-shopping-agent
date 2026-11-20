@@ -45,6 +45,9 @@
   .grocery-sub { text-align:center; font-style:italic; color:var(--soft); margin:2px 0 10px; }
   .box td:first-child::before { content:"\2610\00a0\00a0"; color:var(--ink); }
   .note { border-top:2px solid var(--rule); margin-top:10px; padding-top:10px; color:var(--soft); font-size:.92rem; }
+  .scan { border-top:2px dashed var(--rule); margin-top:14px; padding-top:12px; }
+  .filebtn { display:inline-block; padding:9px 16px; border-radius:999px; background:#fff8e6; border:1px solid var(--rule); cursor:pointer; color:var(--ink); }
+  #photo { display:block; margin-top:8px; max-width:100%; }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -65,6 +68,12 @@
       <button id="check">Check this recipe</button>
       <button class="soft" id="sample">Use the example</button>
     </p>
+    <div class="scan">
+      <p class="hint"><strong>Or take a photo of the recipe.</strong> Choose a photo or take one with your phone camera. The text is read on your own device. The photo is not uploaded anywhere. Then check the words it found and fix any mistakes before you press Check.</p>
+      <label class="filebtn" for="photo">Choose a recipe photo</label>
+      <input id="photo" type="file" accept="image/*" capture="environment">
+      <p class="status" id="scan-status"></p>
+    </div>
   </section>
 
   <section class="page" id="have-card" hidden aria-labelledby="h-have">
@@ -111,6 +120,7 @@
   </section>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 "use strict";
 
@@ -351,6 +361,35 @@ function updateVisibility() {
   $("list-card").hidden = lines.length === 0 && wants.length === 0;
   $("have-card").hidden = lines.length === 0;
 }
+
+// ---------- photo of a recipe: read the text on this device (Tesseract.js, free, no upload) ----------
+// Lines that look like ingredients are kept; the rest is dropped so you can review what is left.
+function ingredientLinesFromScan(text) {
+  return text.split(/\r?\n/)
+    .map(l => l.replace(/^[\s•·\-–—*|>]+/, "").replace(/\s+/g, " ").trim())
+    .filter(l => /^(\d|[½¼¾⅓⅔]|\d+\/\d+)/.test(l) && l.length >= 3 && l.length <= 90);
+}
+$("photo").addEventListener("change", async () => {
+  const file = $("photo").files[0];
+  const status = $("scan-status");
+  if (!file) return;
+  if (!window.Tesseract) { status.textContent = "The text reader did not load. Check your internet connection and try again."; return; }
+  status.textContent = "Reading the photo... this can take a minute the first time.";
+  try {
+    const result = await Tesseract.recognize(file, "eng", {
+      logger: m => { if (m.status === "recognizing text") status.textContent = `Reading the photo... ${Math.round(m.progress * 100)}%`; }
+    });
+    const found = ingredientLinesFromScan(result.data.text);
+    if (found.length === 0) {
+      status.textContent = "No ingredient lines found. Try a closer, straighter photo, or type the list in.";
+      return;
+    }
+    $("recipe").value = found.join("\n");
+    status.textContent = `Found ${found.length} ingredient lines. Check them below, fix any mistakes, then press Check this recipe.`;
+  } catch (err) {
+    status.textContent = "The photo could not be read. Try another photo or type the list in.";
+  }
+});
 
 $("sample").onclick = () => {
   $("recipe").value = "1 1/2 cups milk\n2 eggs\n2 tbsp butter\n1/8 tsp nutmeg\n1 cup all-purpose flour\n3/4 cup rice (150 g)";
