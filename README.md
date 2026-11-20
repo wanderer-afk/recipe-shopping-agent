@@ -55,7 +55,7 @@ pip install -r requirements.txt
    - Paste a recipe, one ingredient per line, amount first. Use the example button to try it.
    - Tap "We have it", "Want more" or "We need it" for each ingredient.
    - Add anything else you want on the list, with no recipe.
-   - Lines measured by spoon or cup but sold by weight need the grams in brackets, like `3/4 cup rice (150 g)`.
+   - Dry goods written in cups (flour, sugar, rice, cheese) are converted to weight automatically. For anything else, add the grams in brackets, like `3/4 cup rice (150 g)`.
 2. **The Python tools** (from this folder):
    ```
    python recipe_reader.py
@@ -77,7 +77,7 @@ pip install -r requirements.txt
   Do not use them for shopping or budgeting.
 - **One price is checked:** eggs, large Grade A, about $2.58 per dozen. This is the US Bureau of
   Labor Statistics national average for January 2026, so it is several months old and local prices differ.
-- **The grocery amounts do not need prices.** The page shows the amount to buy. It also shows a made-up price guess beside each item, labelled NOT REAL, because you asked for one.
+- **The grocery amounts do not need prices.** The page shows the amount to buy. It also shows a made-up price guess beside each item, labelled NOT REAL, for practice.
 - **To use your own prices**, type them into a CSV with the columns `item,pack_size,price`, using the size
   printed on the package. Prices you type in stay in your own browser or your own files.
 - **Store websites are not scraped.** Most stores forbid automated collection of their prices and catalogues

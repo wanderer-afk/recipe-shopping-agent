@@ -69,8 +69,8 @@ story += [
 results = [
     ["Check", "Result"],
     ["Python unit tests (python -m unittest discover -s tests)", "8 of 8 pass: recipe reading, amounts, pack picking, path guard"],
-    ["Sample recipes (10 table recipes) through the page's parser", "All 10 read; every row has an amount and an aisle"],
-    ["Long recipe (75 lines, 25 unique items)", "75 rows in, 75 rows out; items grouped to the right aisle"],
+    ["Sample recipes (10 table recipes) through the page's parser", "Every table row reads with an amount and an aisle; a description sentence at the top of a file may still be added (see limits)"],
+    ["Long recipe (75 lines, 25 unique items)", "Table rows read and group to the right aisle; a few prose lines may still show as items (see limits)"],
     ["Pasted website text (headings, servings, method steps, reviews)", "Lines that are headings, website text, markdown or method sentences are dropped; '2 tbsp + 1/4 tsp' is added together in ml"],
     ["Photo of a plain grocery list, and a PDF recipe, in the live page", "Both added to the same list in a browser test"],
     ["Agent on one sample question (gemma3:12b, local)", "Answered the 'what to buy' question with the shopping-split tool; one run recorded, not a full evaluation"],
@@ -87,7 +87,7 @@ story += [
     Paragraph("5. What is not done (honest limits)", st["Heading2"]),
     Paragraph("The AI agent is command-line only and needs Ollama and a model on your own computer; the live page does not use the agent. "
               "Prices are made up for practice and labelled that way; the only checked price is eggs (US government average, January 2026). "
-              "Recipes are marked untested. The page is tested in a desktop browser, not on a phone. Name matching is by text, so an unusual "
+              "Pasting free text can still add a short prose line as an item, so check the list before you shop. Recipes are marked untested. The page is tested in a desktop browser, not on a phone. Name matching is by text, so an unusual "
               "spelling can stay as a separate row. Two-column PDFs can merge columns. Printing is a list-only print view.", body),
     Spacer(1, 6),
 
