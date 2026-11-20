@@ -164,7 +164,7 @@ function parseAmount(line) {
   const rest = qty[2];
   const lower = rest.toLowerCase();
   // "2 eggs" or "3 cloves garlic": the item word itself is the name, not a unit.
-  if (/^(eggs?|cloves?|slices?|pods?|each)\b/.test(lower)) return { family: "count", base: amount, name: rest, amountText: qty[1] };
+  if (/^(eggs?|cloves?|slices?|pods?|each)\b/.test(lower)) return { family: "count", base: amount, name: rest.replace(/^(cloves?|slices?|pods?)\s+/i, ""), amountText: qty[1] };
   const dozen = lower.match(/^dozen\b\s*(.*)$/);
   if (dozen) return { family: "count", base: amount * 12, name: dozen[1], amountText: `${qty[1]} dozen` };
   if (PACK_WORDS.test(rest)) {
