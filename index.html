@@ -212,7 +212,7 @@ const NAME_NOISE = new Set(["room", "temp", "temperature", "softened", "pinch", 
   "fresh", "large", "small", "medium", "whole", "of", "a", "an", "the", "and", "or", "optional", "to", "taste",
   "can", "cans", "bag", "bags", "box", "jar", "pack", "package", "about", "plus", "more", "some", "extra",
   "finely", "roughly", "thinly", "peeled", "halved", "divided", "melted", "cold", "warm",
-  "freshly", "handful", "crumbled", "packed", "unsalted", "salted", "yellow", "extra", "virgin", "raw", "heaping", "level", "scant", "rounded"]);
+  "freshly", "handful", "crumbled", "inch","packed", "unsalted", "salted", "yellow", "extra", "virgin", "raw", "heaping", "level", "scant", "rounded"]);
 const NAME_SYNONYMS = {
   "cheddar cheese": "cheddar", "shredded cheddar cheese": "shredded cheddar", "shredded cheese": "shredded cheddar",
   "scallion": "green onion", "spring onion": "green onion", "green onions": "green onion",
@@ -233,7 +233,7 @@ function singularWord(w) {
 const TYPOS = { chickn: "chicken", chiken: "chicken", onyon: "onion", onions: "onion", vanila: "vanilla", vanilia: "vanilla",
   potatos: "potato", potatoe: "potato", oliveoil: "olive oil", rise: "rice", tomatos: "tomato", garlc: "garlic", cilantr: "cilantro",
   flour: "flour", sugr: "sugar", buter: "butter", pepr: "pepper", parmesian: "parmesan", jalapeno: "jalapeno",
-  stok: "stock", pase: "paste", oyl: "oil", veg: "vegetable", tumeric: "turmeric", garlick: "garlic" };
+  stok: "stock", pase: "paste", oyl: "oil", veg: "vegetable", tumeric: "turmeric", garlick: "garlic", saus: "sauce" };
 // Words the page knows. A word close to one of these (1 wrong letter for short words, 2 for long) is fixed to it.
 const KNOWN_WORDS = ["chicken", "beef", "pork", "turkey", "salmon", "shrimp", "onion", "garlic", "ginger", "tomato", "potato", "carrot", "celery",
   "pepper", "cumin", "turmeric", "cinnamon", "paprika", "oregano", "basil", "parsley", "cilantro", "thyme", "rosemary", "chili", "sugar", "flour",
@@ -267,7 +267,7 @@ function normName(text) {
   let s = text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\([^)]*\)/g, " ").replace(/,.*$/, " ");
   s = s.replace(/extra[- ]virgin/g, " ");
   // "for garnish" and "ground" in front of a spice do not change which item you buy.
-  s = s.replace(/\bfor (garnish|serving|serve|topping|decoration)\b/g, " ");
+  s = s.replace(/\bfor (garnish|serving|serve|topping|decoration|frying|cooking|greasing|deep frying)\b/g, " ");
   s = s.replace(/\bground (?=(cumin|turmeric|tumeric|cinnamon|coriander|paprika|cayenne|ginger|nutmeg|allspice|cloves?|black pepper|pepper|chili|chilli)\b)/g, " ");
   s = s.replace(/[^a-z\s-]/g, " ").replace(/\s+/g, " ").trim();
   let words = s.split(" ").map(w => TYPOS[w] || (NAME_NOISE.has(w) ? w : fixSpelling(w))).filter(w => w && !NAME_NOISE.has(w)).map(singularWord);
@@ -497,7 +497,20 @@ const NOT_FOOD = /^(for (the )?[\w\s]+|ingredients?|to serve|garnish|topping|jum
 const WEB_JUNK = /^(serves?\b|#|```|print recipe|author|cuisine|course|prep time|cook time|total time|rating|did you make|share this|pin it|skip to|leave a comment|enjoy\b|rated |home\s*>)|^\d+x( |$)|\d+x\d+ (baking|pan|dish|loaf)|\d+(\.\d+)? from \d+|reviews?\b|\bfrom \d+ (reviews|ratings)|out of 5 stars/i;
 const METHOD_WORDS = /\b(bake|preheat|oven|minutes?|mins?|until|simmer|stir|serve|mix|combine|add|whisk|heat|cook|pour|place|season|cover|drain|boil|fry|servings?|yield|calories|step|jump to|instructions|marinate|marinade|chill|rest)\b/i;
 
+// A short heading (no number, few words) after a blank line, and above an amount line or an "Ingredients" line, is a title, not an item.
+function dropTitleLines(text) {
+  const raw = text.split(/\r?\n/).map(l => l.trim());
+  const isTitle = raw.map((l, i) => {
+    if (!l || /\d/.test(l) || l.split(" ").length > 4 || /[:.!?|]/.test(l)) return false;
+    if (i > 0 && raw[i - 1] !== "") return false;
+    const next = raw.slice(i + 1).find(x => x !== "") || "";
+    return /^\d/.test(next) || /^(ingredients?|serves|yield|makes)\b/i.test(next);
+  });
+  return raw.filter((l, i) => !isTitle[i]).join("\n");
+}
+
 function parseRecipeText(text, source) {
+  text = dropTitleLines(text);
   return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
     // A table row "item | amount | aisle | staple" reads as "amount item".
     if (l.indexOf("|") === -1) return l;
@@ -505,7 +518,7 @@ function parseRecipeText(text, source) {
     if (cols[0].toLowerCase() === "item" || /^format/i.test(cols[0])) return "";
     // "2 tbsp + 1/4 tsp" is one amount in this table: keep the first part.
     return cols[1] ? cols[1].split(" + ")[0] + " " + cols[0] : cols[0];
-  }).filter(Boolean).filter((l, i, arr) => !(/^[A-Z][a-zA-Z'\-]*$/.test(l) && /^(ingredients?|serves|yield|print|makes)\b/i.test(arr[i + 1] || ""))).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l) && !WEB_JUNK.test(l)).filter(l => !(/^([A-Z][a-zA-Z'\-]*\s?){2,}$/.test(l) && !/\d/.test(l) && l.length < 45)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1)).filter(l => parseAmount(cleanLine(l).text) !== null || /to taste|pinch|dash/i.test(l) || (l.split(" ").length <= 4 && !/[.!?]/.test(l))).map(original => {
+  }).filter(Boolean).filter((l, i, arr) => !(/^[A-Z][a-zA-Z'\-]*$/.test(l) && /^(ingredients?|serves|yield|print|makes)\b/i.test(arr[i + 1] || ""))).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l) && !WEB_JUNK.test(l) && !/\boptional\b/i.test(l)).filter(l => !(/^([A-Z][a-zA-Z'\-]*\s?){2,}$/.test(l) && !/\d/.test(l) && l.length < 45)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1)).filter(l => parseAmount(cleanLine(l).text) !== null || /to taste|pinch|dash/i.test(l) || (l.split(" ").length <= 4 && !/[.!?]/.test(l))).map(original => {
     const c = cleanLine(original);
     const parsed = parseAmount(c.text);
     // Read the grams from the original line: cleanLine has already removed the brackets from c.text.
@@ -588,7 +601,9 @@ function refreshAll() {
 
 function addRecipe(text, name) {
   if (!text || !text.trim()) { $("scan-status").textContent = "Type at least one ingredient first."; return; }
-  if (recipes.some(r => r.text === text.trim())) { $("scan-status").textContent = "That recipe is already on your list."; return; }
+  // The same recipe pasted again counts as a duplicate even with extra spaces or the lines in another order.
+  const signature = t => t.toLowerCase().split(/\r?\n/).map(l => l.trim().replace(/\s+/g, " ")).filter(Boolean).sort().join("|");
+  if (recipes.some(r => signature(r.text) === signature(text))) { $("scan-status").textContent = "That recipe is already on your list."; return; }
   recipes.push({ name: name || ("Recipe " + (recipes.length + 1)), text: text.trim() });
   save("rsa-recipes", recipes);
   $("recipe").value = "";
@@ -644,6 +659,7 @@ function updateVisibility() {
 // Lines that look like ingredients are kept; the rest is dropped so you can review what is left.
 function ingredientLinesFromScan(text) {
   text = text.replace(/\bIb\b/g, "lb");   // OCR often reads the letter l as capital I
+  text = dropTitleLines(text);            // blank lines between pages are still here, so page-top titles are caught
   return text.split(/\r?\n/)
     .map(l => l.replace(/^[\s•·\-–—*|>]+/, "").replace(/\s+/g, " ").trim())
     .filter(l => l.length >= 2 && l.length <= 120)
@@ -684,7 +700,7 @@ async function readPdf(file, status) {
       text += item.str + " ";
       lastY = y;
     }
-    text += "\n";
+    text += "\n\n";   // a blank line between pages, so a title at the top of a page is seen as a title
   }
   if (text.replace(/\s/g, "").length > 20) return text;
   // No text layer: draw each page and read it with the photo reader.
