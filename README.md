@@ -62,8 +62,6 @@ pip install -r requirements.txt
    ```
    These read the made-up recipe in `sample_recipes/`.
 3. **Your own recipes:** set a folder before running, so the tools read your files instead:
-ecipes"`
-ecipes`
    - Windows PowerShell: `$env:RECIPE_FOLDER="C:\path\to\your\recipes"`
    - Windows Command Prompt: `set RECIPE_FOLDER=C:\path\to\your\recipes`
    - Mac / Linux: `export RECIPE_FOLDER=/path/to/your/recipes`

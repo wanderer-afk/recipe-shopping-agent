@@ -399,7 +399,7 @@ function renderList() {
         return storeAmount({ family: f, base: n.byFamily[f] });
       }).filter(Boolean);
       // A spoon or cup measure with grams in brackets is bought by weight.
-      if (n.grams && !n.byFamily.mass) parts.push(storeAmount({ family: "mass", base: n.grams }));
+      if (n.grams && !n.byFamily.mass) parts = [storeAmount({ family: "mass", base: n.grams })].filter(Boolean);
       tr.append(el("td", parts.join(" + ") || "-"));
     }
     tr.append(el("td", estimateText(n.key), "status"));
@@ -408,7 +408,7 @@ function renderList() {
 
   groupListRows();
   $("list-note").textContent = unanswered > 0
-    ? unanswered + " ingredient(s) are on the list until you tap We have it for anything you already own."
+    ? "Tap We have it in the list above for anything you already have at home. Everything else is on your list."
     : (rows === 0 ? "Nothing to buy right now. The cupboard is full." : "Every ingredient has an answer. Shop from this list.");
 }
 
@@ -421,8 +421,23 @@ function renderAll() {
 // recipes = [{name, text}]. The box is a preview of what you are typing; Check adds it to the list.
 let recipes = load("rsa-recipes", []);
 
+// About how much a cup weighs for dry goods, so a cup of flour is bought by weight like a store sells it.
+const CUP_GRAMS = {
+  "flour": 120, "sugar": 200, "brown sugar": 213, "powdered sugar": 120, "rice": 185, "oats": 90,
+  "cheddar": 113, "mozzarella": 113, "monterey jack": 113, "parmesan": 100, "butter": 227,
+  "breadcrumb": 108, "panko": 60, "cornmeal": 138, "cocoa": 85, "raisin": 150, "walnut": 120, "pecan": 110
+};
+// Lines that are headings or website text, not food.
+const NOT_FOOD = /^(for (the )?[\w\s]+|ingredients?|to serve|garnish|topping|jump to|print|advertisement|servings?|rate|pin|save|share|subscribe|notes?|directions|method)s?:?$/i;
+
 function parseRecipeText(text, source) {
-  return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(original => {
+  return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
+    // A table row "item | amount | aisle | staple" reads as "amount item".
+    if (l.indexOf("|") === -1) return l;
+    const cols = l.split("|").map(c => c.trim());
+    if (cols[0].toLowerCase() === "item" || /^format/i.test(cols[0])) return "";
+    return cols[1] ? cols[1] + " " + cols[0] : cols[0];
+  }).filter(Boolean).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l)).map(original => {
     const c = cleanLine(original);
     const parsed = parseAmount(c.text);
     const grams = c.text.match(/\((\d+(?:\.\d+)?)\s*g\)/i);
@@ -431,11 +446,17 @@ function parseRecipeText(text, source) {
     const noAmount = !parsed;   // "milk" with no amount counts as one, and says so
     let key = normName(display);
     if (!key || /^(cups?|tsp|tbsp|oz|lbs?|g|pt|pints?|pinch|dash|cans?|jars?)$/.test(key)) key = original.toLowerCase().replace(/\s+/g, " ").trim();
+    let family = noAmount ? "count" : parsed.family;
+    let base = noAmount ? 1 : parsed.base;
+    let amountText = noAmount ? (/to taste|pinch|dash/i.test(original) ? "small amount, check your shelf" : "no amount typed (1 assumed)") : parsed.amountText;
+    // A cup of a dry good is bought by weight (1 cup flour is about 120 g), never as fluid ounces.
+    if (!noAmount && family === "volume" && CUP_GRAMS[key] && /cup/i.test(amountText)) {
+      base = (base / 236.588) * CUP_GRAMS[key];
+      family = "mass";
+    }
     return {
       raw: original, name: display, key, parsed: true,
-      family: noAmount ? "count" : parsed.family,
-      base: noAmount ? 1 : parsed.base,
-      amountText: noAmount ? (/to taste|pinch|dash/i.test(original) ? "small amount, check your shelf" : "no amount typed (1 assumed)") : parsed.amountText,
+      family, base, amountText,
       grams: grams ? Number(grams[1]) : null, note: c.note, source
     };
   });
@@ -506,12 +527,14 @@ $("check").onclick = () => {
 // Typed fractions (½ ¼ ¾) become 1/2 1/4 3/4, and a range like "2-3" uses the higher number.
 const FRACTION_CHARS = { "½": "1/2", "¼": "1/4", "¾": "3/4", "⅓": "1/3", "⅔": "2/3", "⅛": "1/8", "⅜": "3/8", "⅝": "5/8", "⅞": "7/8", "⅕": "1/5", "⅙": "1/6" };
 function cleanLine(raw) {
+  raw = raw.replace(/(\d+)\s*(lbs?|pounds?)\s+(\d+(?:\.\d+)?)\s*(oz|ounces?)\b/i, (m, lb, u1, oz) => (Number(lb) + Number(oz) / 16).toFixed(3).replace(/\.?0+$/, "") + " lb");
   let s = raw.replace(/^[\s•·▢☐\-–*]+/, "").replace(/^\d+[.)]\s+/, "").replace(/⁄/g, "/").replace(/^\./, "0.");
+  s = s.replace(/^(about|approx\.?|approximately|optional:?)\s+/i, "");
   // "ground beef 1 lb" or "ground beef, 3/4 lb" -> "1 lb ground beef" (the amount goes first)
   const endAmount = s.match(/^([^\d].*?)[,\s]+((?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)|[½¼¾⅓⅔⅛⅜⅝⅞])\s*(lbs?|oz|cups?|tsp|tbsp|g|kg|ml|quarts?|pints?|cans?)\.?$/i);
   if (endAmount) s = endAmount[2] + " " + endAmount[3] + " " + endAmount[1];
   // "1 (14 oz) can coconut milk" -> "1 coconut milk": drop the package size and the word can/jar/bottle.
-  s = s.replace(/^(\d+(?:\s+\d+\/\d+|\/\d+|\.\d+)?)\s*(?:\([^)]*\)\s*)?(?:cans?|bottles?|jars?|packages?|pkgs?)\s+/i, "$1 ");
+  s = s.replace(/^(\d+(?:\s+\d+\/\d+|\/\d+|\.\d+)?)\s*(?:\([^)]*\)\s*)?(cans?|bottles?|jars?|packages?|pkgs?)\s+/i, (m, amt, unit) => amt + " " + (/^cans?$/i.test(unit) ? "canned " : ""));
   s = s.replace(/(\d)\s*([½¼¾⅓⅔⅛⅜⅝⅞⅕⅙])/g, (m, d, f) => d + " " + FRACTION_CHARS[f]).replace(/[½¼¾⅓⅔⅛⅜⅝⅞⅕⅙]/g, f => FRACTION_CHARS[f]);
   let note = "";
   const range = s.match(/^(\d+(?:\.\d+)?)\s*(?:-|–|to)\s*(\d+(?:\.\d+)?)\s*(.*)$/);
