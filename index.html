@@ -347,18 +347,27 @@ function renderList() {
   let rows = 0;
   let unanswered = 0;
 
-  // Repeated ingredients are added together, so two recipes do not buy eggs twice.
+  // One row per item name, however it was typed. Amounts in the same unit are added together;
+  // amounts in different units (a count and a spoon, say) are each shown, so nothing is guessed.
   const needs = new Map();
+  function addNeed(key, name, family, base, amountText, grams, unparsed) {
+    const n = needs.get(key) || { name, key, byFamily: {}, amountText: [], grams: 0, unparsed: true };
+    n.byFamily[family] = (n.byFamily[family] || 0) + (base || 0);
+    if (amountText) n.amountText.push(amountText);
+    if (grams) n.grams += grams;
+    if (!unparsed) n.unparsed = false;
+    needs.set(key, n);
+  }
   lines.forEach(line => {
     const answer = pantry[line.key];
     if (answer === undefined) unanswered++;   // not answered yet: still on the list until you tap We have it
     if (answer === true) return;
-    const id = line.key + "|" + line.family;
-    const n = needs.get(id) || { name: line.name, key: line.key, family: line.family, base: 0, amountText: [], grams: null, unparsed: !line.parsed };
-    n.base += line.base || 0;
-    if (line.amountText) n.amountText.push(line.amountText);
-    if (line.grams) n.grams = (n.grams || 0) + line.grams;
-    needs.set(id, n);
+    addNeed(line.key, line.name, line.family, line.base, line.amountText, line.grams, !line.parsed);
+  });
+  // Things added by hand count as one of each, and join the same row as a recipe item with the same name.
+  wants.forEach(item => {
+    const key = normName(item);
+    addNeed(key, item, "count", 1, "added by hand", 0, false);
   });
 
   needs.forEach(n => {
@@ -367,29 +376,22 @@ function renderList() {
     tr.append(el("td", n.name), el("td", n.amountText.join(" + ") || "-"));
     if (n.unparsed) {
       tr.append(el("td", "Check by hand: amount not readable", "pill warn"));
-    } else if (n.family === "pack") {
-      tr.append(el("td", "Check by hand: counted in packages", "pill warn"));
-    } else if (n.grams && n.family !== "mass") {
-      // A spoon or cup measure with grams in brackets is bought by weight.
-      tr.append(el("td", storeAmount({ family: "mass", base: n.grams * 1 }) || "-"));
     } else {
-      tr.append(el("td", storeAmount({ family: n.family, base: n.base }) || "-"));
+      const parts = Object.keys(n.byFamily).map(f => {
+        if (f === "pack") return "check by hand (counted in packages)";
+        return storeAmount({ family: f, base: n.byFamily[f] });
+      }).filter(Boolean);
+      // A spoon or cup measure with grams in brackets is bought by weight.
+      if (n.grams && !n.byFamily.mass) parts.push(storeAmount({ family: "mass", base: n.grams }));
+      tr.append(el("td", parts.join(" + ") || "-"));
     }
     tr.append(el("td", estimateText(n.key), "status"));
     body.append(tr);
   });
 
-  // Things added by hand: one of each.
-  wants.forEach(item => {
-    rows++;
-    const tr = el("tr", undefined, "dotted");
-    tr.append(el("td", item), el("td", "-"), el("td", "1"), el("td", estimateText(normName(item)), "status"));
-    body.append(tr);
-  });
-
   groupListRows();
   $("list-note").textContent = unanswered > 0
-    ? `${unanswered} ingredient(s) are on the list until you tap We have it for anything you already own.`
+    ? unanswered + " ingredient(s) are on the list until you tap We have it for anything you already own."
     : (rows === 0 ? "Nothing to buy right now. The cupboard is full." : "Every ingredient has an answer. Shop from this list.");
 }
 
