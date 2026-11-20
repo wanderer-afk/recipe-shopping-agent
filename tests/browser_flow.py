@@ -131,10 +131,12 @@ with sync_playwright() as pw:
 
     # 13. Round 9: a 4-page PDF with five recipes (one page has two). Each heading becomes its own recipe, not an item.
     page.set_input_files("#photo", str(FILES / "round9_four_pages.pdf"))
+    before_count = page.locator("#recipe-list").inner_text().count("ingredients)")
     page.wait_for_function("document.querySelector('#scan-status').textContent.startsWith('Found')", timeout=90000)
     page.wait_for_timeout(500)
     rec = page.locator("#recipe-list").inner_text()
-    check("5-recipe PDF: five recipes on the list", "Recipes on your list" in rec and rec.count("ingredients)") >= 5, rec[:200])
+    added = rec.count("ingredients)") - before_count
+    check("5-recipe PDF: exactly five new recipes added", added == 5, "added %d" % added)
     item_names = [r.split("\t")[0].replace("Not needed", "").strip().lower() for r in list_text(page).split("\n") if "\t" in r]
     check("5-recipe PDF: headings are not items", not any(h in item_names for h in ["japchae", "spanakopita", "chilaquiles rojos", "tom yum goong", "chicken tikka masala"]), str(item_names)[:200])
 
@@ -155,6 +157,16 @@ with sync_playwright() as pw:
     names10 = [r.split("\t")[0].replace("Not needed", "").strip().lower() for r in list_text(page).split("\n") if "\t" in r]
     check("3-page PDF: no recipe title is an item", "carbonara" not in names10 and "gazpacho" not in names10, str(names10)[:200])
     check("3-page PDF: page-2 ingredients joined to Carbonara (pecorino on the list)", any("pecorino" in n for n in names10))
+
+    # 17. Round 10 photo: a heading and fractions-free lines; the heading is not an item and the tomato line is read.
+    page.set_input_files("#photo", str(FILES / "round10_photo_gazpacho.png"))
+    try:
+        page.wait_for_function("document.querySelector('#list-body').innerText.toLowerCase().includes('tomato')", timeout=180000)
+        check("gazpacho photo: tomato line read", True)
+    except Exception:
+        check("gazpacho photo: tomato line read", False, page.locator("#scan-status").inner_text()[:120])
+    photo_names = [r.split("\t")[0].replace("Not needed", "").strip().lower() for r in list_text(page).split("\n") if "\t" in r]
+    check("gazpacho photo: heading is not an item", "gazpacho" not in photo_names, str(photo_names)[-120:])
 
     # 15. Round 9: buttons say which item they are for (screen readers), and the picked answer is marked.
     first_not_needed = page.locator("#list-body button", has_text="Not needed").first

@@ -550,7 +550,7 @@ function parseRecipeText(text, source) {
     if (cols[0].toLowerCase() === "item" || /^format/i.test(cols[0])) return "";
     // "2 tbsp + 1/4 tsp" is one amount in this table: keep the first part.
     return cols[1] ? cols[1].split(" + ")[0] + " " + cols[0] : cols[0];
-  }).filter(Boolean).filter((l, i, arr) => !(/^[A-Z][a-zA-Z'\-]*$/.test(l) && /^(ingredients?|serves|yield|print|makes)\b/i.test(arr[i + 1] || ""))).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l) && !WEB_JUNK.test(l)).filter(l => !(/^([A-Z][a-zA-Z'\-]*\s?){2,}$/.test(l) && !/\d/.test(l) && l.length < 45)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1)).filter(l => parseAmount(cleanLine(l).text) !== null || /to taste|pinch|dash/i.test(l) || (l.split(" ").length <= 4 && !/[.!?]/.test(l))).map(original => {
+  }).filter(Boolean).filter((l, i, arr) => !(/^[A-Z][a-zA-Z'\-]*$/.test(l) && /^(ingredients?|serves|yield|print|makes)\b/i.test(arr[i + 1] || ""))).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l) && !WEB_JUNK.test(l)).filter(l => !(/^([A-Z][a-zA-Z'\-]*\s?){2,}$/.test(l) && !/\d/.test(l) && l.length < 45)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1 && parseAmount(cleanLine(l).text) === null)).filter(l => parseAmount(cleanLine(l).text) !== null || /to taste|pinch|dash/i.test(l) || (l.split(" ").length <= 4 && !/[.!?]/.test(l))).map(original => {
     const c = cleanLine(original);
     const parsed = parseAmount(c.text);
     // Read the grams from the original line: cleanLine has already removed the brackets from c.text.
@@ -605,13 +605,15 @@ function refreshRecipesUI() {
       const stillOn = new Set(allRecipeLines().map(l => l.key).concat(wants.map(w => normName(w))));
       Object.keys(pantry).forEach(k => { if (!stillOn.has(k)) delete pantry[k]; });
       save("rsa-pantry", pantry);
+      Object.keys(dropped).forEach(k => { if (!stillOn.has(k)) delete dropped[k]; });   // "Not needed" choices for removed items expire
+      save("rsa-dropped", dropped);
       refreshAll();
     };
     row.append(del);
     box.append(row);
   });
   const clear = el("button", "Clear all recipes", "soft tiny");
-  clear.onclick = () => { recipes = []; save("rsa-recipes", recipes); pantry = {}; save("rsa-pantry", pantry); refreshAll(); };
+  clear.onclick = () => { recipes = []; save("rsa-recipes", recipes); pantry = {}; save("rsa-pantry", pantry); dropped = {}; save("rsa-dropped", dropped); refreshAll(); };
   box.append(clear);
 }
 
@@ -816,6 +818,7 @@ function readInColumns(data) {
 
 $("photo").addEventListener("change", async () => {
   const file = $("photo").files[0];
+  $("photo").value = "";   // clear the picker so choosing the same file again works (the file is already held above)
   const status = $("scan-status");
   if (!file) return;
   const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);

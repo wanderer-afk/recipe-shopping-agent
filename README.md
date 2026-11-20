@@ -61,6 +61,7 @@ pip install -r requirements.txt
    python recipe_reader.py
    python shopping_list.py
    python pack_picker.py
+   node tests/test_page.js                  # the page logic and the labelled accuracy set (needs Node.js)
    python -m unittest discover -s tests    # the tests
    python tests/browser_flow.py            # the page in Microsoft Edge (needs: pip install playwright)
    ```
