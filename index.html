@@ -437,7 +437,7 @@ function renderList() {
     const answer = pantry[line.key];
     if (answer === undefined) unanswered++;   // not answered yet: still on the list until you tap We have it
     if (answer === true) return;
-    addNeed(line.key, line.name, line.family, line.base, line.amountText, line.grams, !line.parsed);
+    addNeed(line.key, line.key, line.family, line.base, line.amountText, line.grams, !line.parsed);
   });
   // Things added by hand count as one of each, and join the same row as a recipe item with the same name.
   wants.forEach(item => {
