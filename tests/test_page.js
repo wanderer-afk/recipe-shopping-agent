@@ -78,3 +78,5 @@ for (const c of cases) {
 }
 console.log("\naccuracy: " + right + " of " + cases.length + " labelled lines correct (" + Math.round(100 * right / cases.length) + "%)");
 wrong.forEach(w => console.log("  miss: " + w));
+// A wrong labelled line fails the run, so the score cannot quietly drop.
+if (right < cases.length) { console.log("FAIL: accuracy below 100%"); process.exitCode = 1; }

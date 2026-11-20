@@ -223,7 +223,7 @@ const NAME_SYNONYMS = {
   "all purpose flour": "flour", "all-purpose flour": "flour", "plain flour": "flour",
   "whole milk": "milk", "powdered sugar": "powdered sugar", "confectioners sugar": "powdered sugar",
   "cream": "heavy cream", "cheddar cheese": "cheddar", "sharp cheddar": "cheddar", "jalapeno": "jalapeno", "ground black pepper": "black pepper",
-  "stock": "broth", "chicken stock": "chicken broth", "beef stock": "beef broth", "vegetable stock": "vegetable broth"
+  "egg yolk": "egg", "egg yolks": "egg", "stock": "broth", "chicken stock": "chicken broth", "beef stock": "beef broth", "vegetable stock": "vegetable broth"
 };
 function singularWord(w) {
   if (w.length > 4 && /ies$/.test(w)) return w.slice(0, -3) + "y";
@@ -234,7 +234,7 @@ function singularWord(w) {
 const TYPOS = { chickn: "chicken", chiken: "chicken", onyon: "onion", onions: "onion", vanila: "vanilla", vanilia: "vanilla",
   potatos: "potato", potatoe: "potato", oliveoil: "olive oil", rise: "rice", tomatos: "tomato", garlc: "garlic", cilantr: "cilantro",
   flour: "flour", sugr: "sugar", buter: "butter", pepr: "pepper", parmesian: "parmesan", jalapeno: "jalapeno",
-  stok: "stock", pase: "paste", oyl: "oil", veg: "vegetable", tumeric: "turmeric", garlick: "garlic", saus: "sauce", sause: "sauce", juic: "juice", chily: "chili", chilly: "chili" };
+  stok: "stock", pase: "paste", oyl: "oil", veg: "vegetable", tumeric: "turmeric", garlick: "garlic", saus: "sauce", sause: "sauce", juic: "juice", chily: "chili", chilly: "chili", sauc: "sauce" };
 // Words the page knows. A word close to one of these (1 wrong letter for short words, 2 for long) is fixed to it.
 const KNOWN_WORDS = ["chicken", "beef", "pork", "turkey", "salmon", "shrimp", "onion", "garlic", "ginger", "tomato", "potato", "carrot", "celery",
   "pepper", "cumin", "turmeric", "cinnamon", "paprika", "oregano", "basil", "parsley", "cilantro", "thyme", "rosemary", "chili", "sugar", "flour",
@@ -382,8 +382,8 @@ const CATEGORY_RULES = [
   ["Pantry & spices", /\b(broth|stock|bouillon|sauce|peanut butter|coconut milk|soup|chili powder|cumin|cinnamon|pepper flakes|black pepper|white pepper|lime juice|lemon juice)\b/],
   ["Produce", /\b(bell peppers?|red peppers?|green peppers?|jalapenos?)\b/],
   ["Frozen", /\b(frozen|hash browns?|ice cream|frozen peas|phyllo|filo)\b/],
-  ["Meat & seafood", /\b(chicken|beef|pork|lamb|bacon|sausage|turkey|salmon|shrimp|fish|steak|thighs?|breasts?|tuna|cod|clams?|meat|ham|ground (beef|pork|turkey|chicken|lamb))\b/],
-  ["Dairy & eggs", /\b(milk|buttermilk|cream|butter|cheese|parmesan|mozzarella|ricotta|yogurt|eggs?|cheddar|jack|cream cheese|feta|queso)\b/],
+  ["Meat & seafood", /\b(chicken|beef|pork|lamb|bacon|sausage|turkey|salmon|shrimp|fish|steak|thighs?|breasts?|tuna|cod|clams?|meat|ham|guanciale|pancetta|prosciutto|salami|ground (beef|pork|turkey|chicken|lamb))\b/],
+  ["Dairy & eggs", /\b(milk|buttermilk|cream|butter|cheese|parmesan|mozzarella|ricotta|yogurt|eggs?|cheddar|jack|cream cheese|feta|queso|pecorino|romano|gruyere|asiago|parmigiano|grana)\b/],
   ["Bread & bakery", /\b(bread|tortillas?|buns?|baguettes?|pitas?|naan|bagels?)\b/],
   ["Baking", /\b(flour|sugar|baking|yeast|vanilla|cocoa|cornstarch|chocolate chips)\b/],
   ["Household", /freezer|sandwich bags?|zip(lock)? bags?|\b(soap|towels?|foil|freezer bags?|paper towels?|detergent|plastic wrap|sponges?|wrap)\b/],
@@ -515,7 +515,7 @@ const METHOD_WORDS = /\b(bake|preheat|oven|minutes?|mins?|until|simmer|stir|serv
 function titleFlags(raw) {
   return raw.map((l, i) => {
     if (!l || /\d/.test(l) || l.split(" ").length > 4 || /[:.!?|]/.test(l)) return false;
-    if (i > 0 && raw[i - 1] !== "") return false;
+    if (i > 0 && raw[i - 1] !== "" && !/^(advertisement|print|rate|jump to|serves|servings?|yield|calories|pin it|share|reviews?|makes|save)\b/i.test(raw[i - 1])) return false;
     const next = raw.slice(i + 1).find(x => x !== "") || "";
     return /^[-•*]?\s*\d/.test(next) || /^(ingredients?|serves|yield|makes)\b/i.test(next);
   });
@@ -550,7 +550,7 @@ function parseRecipeText(text, source) {
     if (cols[0].toLowerCase() === "item" || /^format/i.test(cols[0])) return "";
     // "2 tbsp + 1/4 tsp" is one amount in this table: keep the first part.
     return cols[1] ? cols[1].split(" + ")[0] + " " + cols[0] : cols[0];
-  }).filter(Boolean).filter((l, i, arr) => !(/^[A-Z][a-zA-Z'\-]*$/.test(l) && /^(ingredients?|serves|yield|print|makes)\b/i.test(arr[i + 1] || ""))).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l) && !WEB_JUNK.test(l) && !/\boptional\b/i.test(l)).filter(l => !(/^([A-Z][a-zA-Z'\-]*\s?){2,}$/.test(l) && !/\d/.test(l) && l.length < 45)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1)).filter(l => parseAmount(cleanLine(l).text) !== null || /to taste|pinch|dash/i.test(l) || (l.split(" ").length <= 4 && !/[.!?]/.test(l))).map(original => {
+  }).filter(Boolean).filter((l, i, arr) => !(/^[A-Z][a-zA-Z'\-]*$/.test(l) && /^(ingredients?|serves|yield|print|makes)\b/i.test(arr[i + 1] || ""))).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l) && !WEB_JUNK.test(l)).filter(l => !(/^([A-Z][a-zA-Z'\-]*\s?){2,}$/.test(l) && !/\d/.test(l) && l.length < 45)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1)).filter(l => parseAmount(cleanLine(l).text) !== null || /to taste|pinch|dash/i.test(l) || (l.split(" ").length <= 4 && !/[.!?]/.test(l))).map(original => {
     const c = cleanLine(original);
     const parsed = parseAmount(c.text);
     // Read the grams from the original line: cleanLine has already removed the brackets from c.text.
@@ -571,7 +571,8 @@ function parseRecipeText(text, source) {
     // "a handful" of fresh produce (green beans, herbs) is a small buy, not a spice to check on the shelf.
     if (noAmount && /handful/i.test(original) && categoryOf(key) === "Produce") { family = "mass"; base = 113.4; amountText = "about 1/4 lb (a handful)"; }
     // Keep the words a shopper needs: "3 cloves" (not just "3") and "1 can (14.5 oz)".
-    if (!noAmount && /clove/i.test(original)) amountText += " cloves";
+    if (!noAmount && /clove/i.test(original)) amountText += (parsed.base === 1 ? " clove" : " cloves");
+    if (/\boptional\b/i.test(original)) amountText = "optional, buy only if you want it";
     const canSize = original.match(/\((\d+(?:\.\d+)?)\s*oz\)\s*can/i);
     if (!noAmount && canSize) amountText += " can (" + canSize[1] + " oz)";
     // A cup of a dry good is bought by weight (1 cup flour is about 120 g), never as fluid ounces.

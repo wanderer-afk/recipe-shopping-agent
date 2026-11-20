@@ -1,7 +1,7 @@
 # Our Kitchen Grocery Book (Recipe Shopping Checker)
 
 Paste a recipe, or take a photo of one. Tell the checker what you already have at home, and it gives you a
-grocery list written in amounts stores actually sell, like "at least 2 tbsp" or "at least 6 oz".
+grocery list with amounts rounded up to shop-friendly sizes, like "at least 2 tbsp" or "at least 6 oz". These are rounded amounts, not always real pack sizes.
 It can also answer questions about a recipe with a small AI agent that runs on your own computer.
 
 ## What is in this repo

@@ -135,7 +135,7 @@ with sync_playwright() as pw:
     page.wait_for_timeout(500)
     rec = page.locator("#recipe-list").inner_text()
     check("5-recipe PDF: five recipes on the list", "Recipes on your list" in rec and rec.count("ingredients)") >= 5, rec[:200])
-    item_names = [r.split("\t")[0].strip().lower() for r in list_text(page).split("\n") if "\t" in r]
+    item_names = [r.split("\t")[0].replace("Not needed", "").strip().lower() for r in list_text(page).split("\n") if "\t" in r]
     check("5-recipe PDF: headings are not items", not any(h in item_names for h in ["japchae", "spanakopita", "chilaquiles rojos", "tom yum goong", "chicken tikka masala"]), str(item_names)[:200])
 
     # 14. Round 9: a two-column photo is read column by column.
@@ -146,6 +146,15 @@ with sync_playwright() as pw:
     except Exception:
         check("two-column photo: sesame oil read from the left column", False, page.locator("#scan-status").inner_text()[:120])
     check("two-column photo: fish sauce is its own row", "fish sauce" in list_text(page).lower())
+
+    # 16. Round 10: a 3-page PDF where Carbonara continues onto page 2 with no heading, and Gazpacho starts page 3.
+    page.set_input_files("#photo", str(FILES / "round10_three_pages.pdf"))
+    page.wait_for_timeout(7000)
+    rec10 = page.locator("#recipe-list").inner_text()
+    check("3-page PDF: Carbonara and Gazpacho are two recipes", "Carbonara (6 ingredients)" in rec10 and "Gazpacho (4 ingredients)" in rec10, rec10[:200])
+    names10 = [r.split("\t")[0].replace("Not needed", "").strip().lower() for r in list_text(page).split("\n") if "\t" in r]
+    check("3-page PDF: no recipe title is an item", "carbonara" not in names10 and "gazpacho" not in names10, str(names10)[:200])
+    check("3-page PDF: page-2 ingredients joined to Carbonara (pecorino on the list)", any("pecorino" in n for n in names10))
 
     # 15. Round 9: buttons say which item they are for (screen readers), and the picked answer is marked.
     first_not_needed = page.locator("#list-body button", has_text="Not needed").first
