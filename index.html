@@ -531,7 +531,7 @@ function parseRecipeText(text, source) {
       family = "mass";
     }
     return {
-      raw: original, name: display, parsed: true,
+      raw: original, name: display, key, parsed: true,
       family, base, amountText,
       grams: grams ? Number(grams[1]) : null, note: c.note, source
     };
