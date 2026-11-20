@@ -197,7 +197,7 @@ const NAME_NOISE = new Set(["pinch", "dash", "taste", "cloves", "clove", "minced
   "boneless", "skinless", "packed", "heaping", "level", "scant", "rounded"]);
 const NAME_SYNONYMS = {
   "scallion": "green onion", "spring onion": "green onion", "green onions": "green onion",
-  "red bell pepper": "bell pepper", "green bell pepper": "bell pepper", "sweet pepper": "bell pepper",
+  "pepper": "black pepper", "red bell pepper": "bell pepper", "green bell pepper": "bell pepper", "sweet pepper": "bell pepper",
   "coriander leaves": "cilantro", "cilantro leaves": "cilantro",
   "kosher salt": "salt", "table salt": "salt", "fine salt": "salt", "sea salt": "salt",
   "all purpose flour": "flour", "all-purpose flour": "flour", "plain flour": "flour",
@@ -498,6 +498,9 @@ $("check").onclick = () => {
 const FRACTION_CHARS = { "½": "1/2", "¼": "1/4", "¾": "3/4", "⅓": "1/3", "⅔": "2/3", "⅛": "1/8", "⅜": "3/8", "⅝": "5/8", "⅞": "7/8", "⅕": "1/5", "⅙": "1/6" };
 function cleanLine(raw) {
   let s = raw.replace(/^[\s•·▢☐\-–*]+/, "").replace(/^\d+[.)]\s+/, "").replace(/⁄/g, "/").replace(/^\./, "0.");
+  // "ground beef 1 lb" or "ground beef, 3/4 lb" -> "1 lb ground beef" (the amount goes first)
+  const endAmount = s.match(/^([^\d].*?)[,\s]+((?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)|[½¼¾⅓⅔⅛⅜⅝⅞])\s*(lbs?|oz|cups?|tsp|tbsp|g|kg|ml|quarts?|pints?|cans?)\.?$/i);
+  if (endAmount) s = endAmount[2] + " " + endAmount[3] + " " + endAmount[1];
   // "1 (14 oz) can coconut milk" -> "1 coconut milk": drop the package size and the word can/jar/bottle.
   s = s.replace(/^(\d+(?:\s+\d+\/\d+|\/\d+|\.\d+)?)\s*(?:\([^)]*\)\s*)?(?:cans?|bottles?|jars?|packages?|pkgs?)\s+/i, "$1 ");
   s = s.replace(/(\d)\s*([½¼¾⅓⅔⅛⅜⅝⅞⅕⅙])/g, (m, d, f) => d + " " + FRACTION_CHARS[f]).replace(/[½¼¾⅓⅔⅛⅜⅝⅞⅕⅙]/g, f => FRACTION_CHARS[f]);
