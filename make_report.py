@@ -69,6 +69,8 @@ story += [
 results = [
     ["Check", "Result"],
     ["Python unit tests (python -m unittest discover -s tests)", "8 of 8 pass: recipe reading, amounts, pack picking, path guard"],
+    ["Labelled accuracy (tests/accuracy_cases.json, 20 lines written by hand)", "20 of 20 correct on this set; a small set, so a bigger labelled set is the next step"],
+    ["Agent loop, with a fake model (tests/test_agent_loop.py)", "6 tests: a known tool, an unknown tool refused, a non-object reply stopped, bad arguments reported, the 6-step cap, paths outside the folder refused"],
     ["Sample recipes (10 table recipes) through the page's parser", "Every table row reads with an amount and an aisle; a description sentence at the top of a file may still be added (see limits)"],
     ["Long recipe (75 lines, 25 unique items)", "Table rows read and group to the right aisle; a few prose lines may still show as items (see limits)"],
     ["Pasted website text (headings, servings, method steps, reviews)", "Lines that are headings, website text, markdown or method sentences are dropped; '2 tbsp + 1/4 tsp' is added together in ml"],

@@ -72,7 +72,7 @@ TOOLS = {
 
 SYSTEM = (
     "You help with a grocery list. You can use these tools, one at a time:\n"
-    + "\n".join(f"- {name}({desc})" for name, (_, desc) in TOOLS.items())
+    + "\n".join(f"- {name}({desc}). {(fn.__doc__ or '').strip()}" for name, (fn, desc) in TOOLS.items())
     + "\nReply with JSON only. To use a tool: {\"tool\": \"<name>\", \"args\": {...}}. "
     "When you can answer: {\"final\": \"<answer in plain words>\"}. "
     "You only read data. You never change lists. Answer every part of the question; if a tool says NO PRICE, say so."

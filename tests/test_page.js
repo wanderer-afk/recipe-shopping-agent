@@ -66,3 +66,15 @@ check("canned goods keep 'canned'", () => {
   assert.strictEqual(__K(rows("2 cans diced tomatoes")[0].key), "Pantry & spices");
 });
 console.log("\n" + passed + " page tests passed");
+
+// Labelled accuracy: each line has the answer we expect (item key and kind of amount).
+const cases = JSON.parse(fs.readFileSync(path.join(__dirname, "accuracy_cases.json"), "utf8"));
+let right = 0;
+const wrong = [];
+for (const c of cases) {
+  const r = rows(c.line)[0];
+  if (r && r.key === c.key && r.family === c.family) right++;
+  else wrong.push(c.line + " -> " + (r ? r.key + " / " + r.family : "nothing"));
+}
+console.log("\naccuracy: " + right + " of " + cases.length + " labelled lines correct (" + Math.round(100 * right / cases.length) + "%)");
+wrong.forEach(w => console.log("  miss: " + w));

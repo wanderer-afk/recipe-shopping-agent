@@ -212,6 +212,7 @@ const NAME_NOISE = new Set(["pinch", "dash", "taste", "cloves", "clove", "minced
   "finely", "roughly", "thinly", "peeled", "halved", "divided", "softened", "melted", "cold", "warm", "hot",
   "boneless", "skinless", "packed", "unsalted", "salted", "yellow", "white", "extra", "virgin", "raw", "heaping", "level", "scant", "rounded"]);
 const NAME_SYNONYMS = {
+  "cheddar cheese": "cheddar", "shredded cheddar cheese": "shredded cheddar", "shredded cheese": "shredded cheddar",
   "scallion": "green onion", "spring onion": "green onion", "green onions": "green onion",
   "pepper": "black pepper", "red bell pepper": "bell pepper", "green bell pepper": "bell pepper", "sweet pepper": "bell pepper",
   "coriander leaves": "cilantro", "cilantro leaves": "cilantro",
@@ -385,7 +386,7 @@ function renderList() {
   // amounts in different units (a count and a spoon, say) are each shown, so nothing is guessed.
   const needs = new Map();
   function addNeed(key, name, family, base, amountText, grams, unparsed) {
-    if (key === "water" || key === "ice") return;
+    if (/(^| )(water|ice)$/.test(key)) return;   // water and ice (also "lukewarm water") are not shopping items
     const n = needs.get(key) || { name, key, byFamily: {}, amountText: [], grams: 0, unparsed: true };
     n.byFamily[family] = (n.byFamily[family] || 0) + (base || 0);
     if (amountText) n.amountText.push(amountText);
@@ -449,7 +450,7 @@ const CUP_GRAMS = {
 };
 // Lines that are headings or website text, not food.
 const NOT_FOOD = /^(for (the )?[\w\s]+|ingredients?|to serve|garnish|topping|jump to|print|advertisement|servings?|rate|pin|save|share|subscribe|notes?|directions|method|instructions?|nutrition|yield|leftovers?)s?:?$/i;
-const WEB_JUNK = /^(#|```|print recipe|author|cuisine|course|prep time|cook time|total time|rating|did you make|share this|pin it|skip to|leave a comment|enjoy|rated |home\s*>)|^\d+x( |$)|\d+x\d+ (baking|pan|dish|loaf)|\d+(\.\d+)? from \d+|reviews?|from \d+ (reviews|ratings)|out of 5 stars/i;
+const WEB_JUNK = /^(#|```|print recipe|author|cuisine|course|prep time|cook time|total time|rating|did you make|share this|pin it|skip to|leave a comment|enjoy\b|rated |home\s*>)|^\d+x( |$)|\d+x\d+ (baking|pan|dish|loaf)|\d+(\.\d+)? from \d+|reviews?\b|\bfrom \d+ (reviews|ratings)|out of 5 stars/i;
 const METHOD_WORDS = /\b(bake|preheat|oven|minutes?|mins?|until|simmer|stir|serve|mix|combine|add|whisk|heat|cook|pour|place|season|cover|drain|boil|fry|servings?|yield|calories|step|jump to|instructions|marinate|marinade|chill|rest)\b/i;
 
 function parseRecipeText(text, source) {
@@ -473,7 +474,7 @@ function parseRecipeText(text, source) {
     let base = noAmount ? 1 : parsed.base;
     let amountText = noAmount ? (/to taste|pinch|dash/i.test(original) ? "small amount, check your shelf" : "1 (no amount given)") : parsed.amountText;
     // A cup of a dry good is bought by weight (1 cup flour is about 120 g), never as fluid ounces.
-    const dryKey = Object.keys(CUP_GRAMS).find(k => key === k || key.endsWith(" " + k));
+    const dryKey = /cheese/.test(key) ? "cheddar" : /\bcooked\b/i.test(original) ? null : Object.keys(CUP_GRAMS).find(k => key === k || key.endsWith(" " + k));
     if (!noAmount && family === "volume" && dryKey && /cup/i.test(amountText)) {
       base = (base / 236.588) * CUP_GRAMS[dryKey];
       family = "mass";
