@@ -65,6 +65,23 @@ check("pepper alone is black pepper; bell pepper stays bell pepper", () => {
 check("canned goods keep 'canned'", () => {
   assert.strictEqual(__K(rows("2 cans diced tomatoes")[0].key), "Pantry & spices");
 });
+check("round 11: a multiplied can line is one can, not junk", () => {
+  const r = rows("1x 400g can chickpeas");
+  assert.strictEqual(r.length, 1);
+  assert.strictEqual(r[0].key, "canned chickpea");
+});
+check("round 11: a zero denominator is not Infinity", () => {
+  const r = rows("1/0 cup water");
+  assert.ok(Number.isFinite(r[0].base), "base " + r[0].base);
+});
+check("round 11: emoji, full-width digits and HTML tags do not hide the amount", () => {
+  assert.strictEqual(rows("🥚 2 eggs")[0].base, 2);
+  assert.strictEqual(rows("２ eggs")[0].base, 2);
+  assert.strictEqual(rows("<b>2 eggs</b>")[0].key, "egg");
+});
+check("round 11: symbols with no word in them are not items", () => {
+  assert.deepStrictEqual(rows("---\n???\n2").map(x => x.name), []);
+});
 console.log("\n" + passed + " page tests passed");
 
 // Labelled accuracy: each line has the answer we expect (item key and kind of amount).

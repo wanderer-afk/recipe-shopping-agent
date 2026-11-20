@@ -175,6 +175,35 @@ with sync_playwright() as pw:
     check("answer buttons have aria-pressed", first_have.get_attribute("aria-pressed") in ("true", "false"))
     check("scan status is announced (aria-live)", page.locator("#scan-status").get_attribute("aria-live") == "polite")
 
+    # 18. Round 11: hostile text is shown as plain text and no script runs.
+    page.fill("#recipe", '<img src=x onerror="window.__pwned=1">2 eggs\n<script>window.__pwned=1</script>1 cup milk\n1x 400g can chickpeas\n\U0001F95A 2 eggs large\n---\n???')
+    page.click("#check")
+    page.wait_for_timeout(300)
+    txt = list_text(page)
+    check("hostile text: no script ran", page.evaluate("window.__pwned === undefined"))
+    check("hostile text: chickpeas read as a can row", "chickpea" in txt.lower(), txt[:200])
+    check("hostile text: milk on the list", "milk" in txt.lower())
+    check("hostile text: symbol-only lines are not items", "---" not in txt and "???" not in txt)
+
+    # 19. Round 11: a 2,000-line paste finishes quickly and does not break the page.
+    foods = ["flour", "sugar", "butter", "milk", "egg", "salt", "rice", "onion", "garlic", "tomato", "basil", "cheddar"]
+    big = "\n".join("%d cups %s" % (i % 4 + 1, foods[i % len(foods)]) for i in range(2000))
+    t0 = page.evaluate("performance.now()")
+    page.fill("#recipe", big)
+    page.click("#check")
+    page.wait_for_function("document.querySelectorAll('#list-body tr').length > 0", timeout=60000)
+    took = (page.evaluate("performance.now()") - t0) / 1000
+    check("2,000-line paste: finishes in under 20 seconds", took < 20, "took %.1f s" % took)
+    check("2,000-line paste: no page errors", not errors, "; ".join(errors)[:200])
+
+    # 20. Round 11: a recipe with only symbols adds nothing.
+    before = page.locator("#recipe-list").inner_text().count("ingredients")
+    page.fill("#recipe", "---\n???\n...")
+    page.click("#check")
+    page.wait_for_timeout(200)
+    after = page.locator("#recipe-list").inner_text().count("ingredients")
+    check("symbol-only recipe: nothing added", after == before, "before %d after %d" % (before, after))
+
     browser.close()
 
 failed = [n for n, ok in RESULTS if not ok]
