@@ -71,10 +71,9 @@ results = [
     ["Python unit tests (python -m unittest discover -s tests)", "8 of 8 pass: recipe reading, amounts, pack picking, path guard"],
     ["Sample recipes (10 table recipes) through the page's parser", "All 10 read; every row has an amount and an aisle"],
     ["Long recipe (75 lines, 25 unique items)", "75 rows in, 75 rows out; items grouped to the right aisle"],
-    ["Pasted website text (headings, servings, method steps)", "Headings and method lines are dropped; amounts like '2 tbsp + 1/4 tsp' keep the first part"],
+    ["Pasted website text (headings, servings, method steps, reviews)", "Lines that are headings, website text, markdown or method sentences are dropped; '2 tbsp + 1/4 tsp' is added together in ml"],
     ["Photo of a plain grocery list, and a PDF recipe, in the live page", "Both added to the same list in a browser test"],
-    ["Agent on a sample question (gemma3:12b, local)", "Answered the 'what to buy' question from the shopping-split tool"],
-    ["Agent asked about a price with no price file", "Said no price was available; did not invent one"],
+    ["Agent on one sample question (gemma3:12b, local)", "Answered the 'what to buy' question with the shopping-split tool; one run recorded, not a full evaluation"],
 ]
 t = Table([[Paragraph(a, cell), Paragraph(b, cell)] for a, b in results], colWidths=[230, 270])
 t.setStyle(TableStyle([
