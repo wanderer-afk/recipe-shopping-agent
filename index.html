@@ -194,7 +194,7 @@ const NAME_NOISE = new Set(["pinch", "dash", "taste", "cloves", "clove", "minced
   "fresh", "large", "small", "medium", "whole", "of", "a", "an", "the", "and", "or", "optional", "to", "taste",
   "can", "cans", "bag", "bags", "box", "jar", "pack", "package", "about", "plus", "more", "some", "extra",
   "finely", "roughly", "thinly", "peeled", "halved", "divided", "softened", "melted", "cold", "warm", "hot",
-  "boneless", "skinless", "packed", "heaping", "level", "scant", "rounded"]);
+  "boneless", "skinless", "packed", "unsalted", "salted", "yellow", "white", "extra", "virgin", "raw", "heaping", "level", "scant", "rounded"]);
 const NAME_SYNONYMS = {
   "scallion": "green onion", "spring onion": "green onion", "green onions": "green onion",
   "pepper": "black pepper", "red bell pepper": "bell pepper", "green bell pepper": "bell pepper", "sweet pepper": "bell pepper",
@@ -202,7 +202,7 @@ const NAME_SYNONYMS = {
   "kosher salt": "salt", "table salt": "salt", "fine salt": "salt", "sea salt": "salt",
   "all purpose flour": "flour", "all-purpose flour": "flour", "plain flour": "flour",
   "whole milk": "milk", "powdered sugar": "powdered sugar", "confectioners sugar": "powdered sugar",
-  "cream": "heavy cream", "ground black pepper": "black pepper"
+  "cream": "heavy cream", "cheddar cheese": "cheddar", "sharp cheddar": "cheddar", "jalapeno": "jalapeno", "ground black pepper": "black pepper"
 };
 function singularWord(w) {
   if (w.length > 4 && /ies$/.test(w)) return w.slice(0, -3) + "y";
@@ -211,7 +211,8 @@ function singularWord(w) {
   return w;
 }
 function normName(text) {
-  let s = text.toLowerCase().replace(/\([^)]*\)/g, " ").replace(/,.*$/, " ");
+  let s = text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\([^)]*\)/g, " ").replace(/,.*$/, " ");
+  s = s.replace(/extra[- ]virgin/g, " ");
   s = s.replace(/[^a-z\s-]/g, " ").replace(/\s+/g, " ").trim();
   let words = s.split(" ").filter(w => w && !NAME_NOISE.has(w)).map(singularWord);
   let key = words.join(" ").trim();
@@ -380,8 +381,10 @@ function renderList() {
   });
   // Things added by hand count as one of each, and join the same row as a recipe item with the same name.
   wants.forEach(item => {
-    const key = normName(item);
-    addNeed(key, item, "count", 1, "added by hand", 0, false);
+    const w = parseRecipeText(item, "hand")[0];
+    if (!w) return;
+    const handAmount = w.amountText && w.amountText.indexOf("no amount") === 0 ? "added by hand" : w.amountText;
+    addNeed(w.key, w.name, w.family, w.base, handAmount, w.grams, false);
   });
 
   needs.forEach(n => {
@@ -449,7 +452,13 @@ function refreshRecipesUI() {
     const count = parseRecipeText(r.text, r.name).length;
     row.append(el("span", r.name + " (" + count + " ingredients) "));
     const del = el("button", "Remove", "soft tiny");
-    del.onclick = () => { recipes.splice(i, 1); save("rsa-recipes", recipes); refreshAll(); };
+    del.onclick = () => {
+      recipes.splice(i, 1); save("rsa-recipes", recipes);
+      const stillOn = new Set(allRecipeLines().map(l => l.key).concat(wants.map(w => normName(w))));
+      Object.keys(pantry).forEach(k => { if (!stillOn.has(k)) delete pantry[k]; });
+      save("rsa-pantry", pantry);
+      refreshAll();
+    };
     row.append(del);
     box.append(row);
   });
