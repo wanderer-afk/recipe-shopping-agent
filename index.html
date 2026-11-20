@@ -184,15 +184,36 @@ function parseAmount(line) {
 }
 
 // Same name on both sides: lower case, no brackets, no size words, plurals folded.
+// Turns any way of writing an item into one name, so people do not have to type it the same way.
+// "2 cloves garlic", "garlic cloves", "minced garlic" and "garlic" all become "garlic".
+// "eggs" and "egg" become "egg". "scallions" and "green onions" become "green onion".
+const NAME_NOISE = new Set(["cloves", "clove", "minced", "chopped", "diced", "sliced", "grated", "crushed",
+  "fresh", "large", "small", "medium", "whole", "of", "a", "an", "the", "and", "or", "optional", "to", "taste",
+  "can", "cans", "bag", "bags", "box", "jar", "pack", "package", "about", "plus", "more", "some", "extra",
+  "finely", "roughly", "thinly", "peeled", "halved", "divided", "softened", "melted", "cold", "warm", "hot",
+  "boneless", "skinless", "packed", "heaping", "level", "scant", "rounded"]);
+const NAME_SYNONYMS = {
+  "scallion": "green onion", "spring onion": "green onion", "green onions": "green onion",
+  "bell pepper": "pepper", "red bell pepper": "pepper", "green bell pepper": "pepper", "sweet pepper": "pepper",
+  "coriander leaves": "cilantro", "cilantro leaves": "cilantro",
+  "kosher salt": "salt", "table salt": "salt", "fine salt": "salt", "sea salt": "salt",
+  "all purpose flour": "flour", "all-purpose flour": "flour", "plain flour": "flour",
+  "whole milk": "milk", "powdered sugar": "powdered sugar", "confectioners sugar": "powdered sugar",
+  "cream": "heavy cream", "ground black pepper": "black pepper"
+};
+function singularWord(w) {
+  if (w.length > 4 && /ies$/.test(w)) return w.slice(0, -3) + "y";
+  if (w.length > 4 && /oes$/.test(w)) return w.slice(0, -2);
+  if (w.length > 3 && /s$/.test(w) && !/ss$/.test(w)) return w.slice(0, -1);
+  return w;
+}
 function normName(text) {
   let s = text.toLowerCase().replace(/\([^)]*\)/g, " ").replace(/,.*$/, " ");
-  s = s.replace(/\b(large|fresh|medium|small|whole)\b/g, " ").replace(/[^a-z\s-]/g, " ").replace(/\s+/g, " ").trim();
-  const words = s.split(" ");
-  const last = words.pop() || "";
-  let fixed = last;
-  if (/oes$/.test(last)) fixed = last.slice(0, -2);
-  else if (/s$/.test(last) && !/ss$/.test(last) && last.length > 3) fixed = last.slice(0, -1);
-  return [...words, fixed].join(" ").trim();
+  s = s.replace(/[^a-z\s-]/g, " ").replace(/\s+/g, " ").trim();
+  let words = s.split(" ").filter(w => w && !NAME_NOISE.has(w)).map(singularWord);
+  let key = words.join(" ").trim();
+  if (NAME_SYNONYMS[key]) key = NAME_SYNONYMS[key];
+  return key;
 }
 
 // Turns a need into an amount a shopper can find on a shelf, rounded UP, written "at least ...".
