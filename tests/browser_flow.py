@@ -120,6 +120,15 @@ with sync_playwright() as pw:
     after = page.locator("#recipe-list").inner_text().count("ingredients")
     check("duplicate paste with extra spaces and lines reordered is not added again", after == before, "before %d after %d" % (before, after))
 
+    # 12. "Not needed" takes one item off the shopping list; "Clear all answers" puts it back.
+    first_item = page.locator("#list-body tr.dotted").first.locator("td").first.inner_text().split("\n")[0].strip()
+    page.locator("#list-body tr.dotted").first.get_by_role("button", name="Not needed").click()
+    page.wait_for_timeout(300)
+    check("not needed: item leaves the list", first_item not in list_text(page), first_item)
+    page.click("#clear-pantry")
+    page.wait_for_timeout(300)
+    check("not needed: clear answers puts it back", first_item in list_text(page), first_item)
+
     browser.close()
 
 failed = [n for n, ok in RESULTS if not ok]
