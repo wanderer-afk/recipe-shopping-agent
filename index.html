@@ -33,7 +33,10 @@
   button.soft { background:#fff8e6; color:var(--ink); border:1px solid var(--rule); box-shadow:none; }
   button.tiny { padding:4px 10px; font-size:.85rem; }
   button:focus-visible { outline:3px solid var(--butter); outline-offset:2px; }
-  .row-actions { white-space:nowrap; }
+  .row-actions { white-space:normal; }
+  .row-actions button { margin:2px 4px 2px 0; }
+  td { overflow-wrap:anywhere; }
+  @media (max-width:560px) { th, td { padding:6px 4px; font-size:14px; } table { table-layout:fixed; } }
   table { width:100%; border-collapse:collapse; }
   th, td { text-align:left; padding:9px 6px; vertical-align:top; }
   th { font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; color:var(--soft); border-bottom:2px solid var(--rule); }
@@ -43,7 +46,7 @@
   .pill.warn { background:#f8d7cc; }
   .grocery-title { text-align:center; font-size:1.6rem; margin:0; }
   .grocery-sub { text-align:center; font-style:italic; color:var(--soft); margin:2px 0 10px; }
-  .box td:first-child::before { content:"\2610\00a0\00a0"; color:var(--ink); }
+  .box tr:not(.catrow) td:first-child::before { content:"\2610\00a0\00a0"; color:var(--ink); }
   .note { border-top:2px solid var(--rule); margin-top:10px; padding-top:10px; color:var(--soft); font-size:.92rem; }
   .scan { border-top:2px dashed var(--rule); margin-top:14px; padding-top:12px; }
   .filebtn { display:inline-block; padding:9px 16px; border-radius:999px; background:#fff8e6; border:1px solid var(--rule); cursor:pointer; color:var(--ink); }
@@ -187,7 +190,7 @@ function parseAmount(line) {
 // Turns any way of writing an item into one name, so people do not have to type it the same way.
 // "2 cloves garlic", "garlic cloves", "minced garlic" and "garlic" all become "garlic".
 // "eggs" and "egg" become "egg". "scallions" and "green onions" become "green onion".
-const NAME_NOISE = new Set(["cloves", "clove", "minced", "chopped", "diced", "sliced", "grated", "crushed",
+const NAME_NOISE = new Set(["pinch", "dash", "taste", "cloves", "clove", "minced", "chopped", "diced", "sliced", "grated", "crushed",
   "fresh", "large", "small", "medium", "whole", "of", "a", "an", "the", "and", "or", "optional", "to", "taste",
   "can", "cans", "bag", "bags", "box", "jar", "pack", "package", "about", "plus", "more", "some", "extra",
   "finely", "roughly", "thinly", "peeled", "halved", "divided", "softened", "melted", "cold", "warm", "hot",
@@ -308,8 +311,10 @@ function setAnswer(key, value) {
 // ---------- groups the grocery list by aisle, so you shop one section at a time ----------
 const LIST_ORDER = ["Produce", "Meat & seafood", "Dairy & eggs", "Frozen", "Bread & bakery", "Baking", "Pantry & spices", "Household", "Other"];
 const CATEGORY_RULES = [
+  ["Pantry & spices", /\b(broth|stock|bouillon|sauce|peanut butter|coconut milk|soup|chili powder|cumin|cinnamon|pepper flakes|black pepper|white pepper)\b/],
+  ["Produce", /\b(bell peppers?|red peppers?|green peppers?|jalapenos?)\b/],
   ["Frozen", /\b(frozen|hash browns?|ice cream|frozen peas)\b/],
-  ["Meat & seafood", /\b(chicken|beef|pork|lamb|bacon|sausage|turkey|salmon|shrimp|fish|steak|thighs?|breasts?|tuna|cod|clams?|meat|ham|ground)\b/],
+  ["Meat & seafood", /\b(chicken|beef|pork|lamb|bacon|sausage|turkey|salmon|shrimp|fish|steak|thighs?|breasts?|tuna|cod|clams?|meat|ham|ground (beef|pork|turkey|chicken|lamb))\b/],
   ["Dairy & eggs", /\b(milk|cream|butter|cheese|parmesan|mozzarella|ricotta|yogurt|eggs?|cheddar|jack|cream cheese)\b/],
   ["Bread & bakery", /\b(bread|tortillas?|buns?|baguettes?|pitas?|naan|bagels?)\b/],
   ["Baking", /\b(flour|sugar|baking|yeast|vanilla|cocoa|cornstarch|chocolate chips)\b/],
@@ -358,6 +363,7 @@ function renderList() {
   // amounts in different units (a count and a spoon, say) are each shown, so nothing is guessed.
   const needs = new Map();
   function addNeed(key, name, family, base, amountText, grams, unparsed) {
+    if (key === "water" || key === "ice") return;
     const n = needs.get(key) || { name, key, byFamily: {}, amountText: [], grams: 0, unparsed: true };
     n.byFamily[family] = (n.byFamily[family] || 0) + (base || 0);
     if (amountText) n.amountText.push(amountText);
@@ -423,7 +429,7 @@ function parseRecipeText(text, source) {
       raw: original, name: display, key: normName(display), parsed: true,
       family: noAmount ? "count" : parsed.family,
       base: noAmount ? 1 : parsed.base,
-      amountText: noAmount ? "no amount typed (1 assumed)" : parsed.amountText,
+      amountText: noAmount ? (/to taste|pinch|dash/i.test(original) ? "small amount, check your shelf" : "no amount typed (1 assumed)") : parsed.amountText,
       grams: grams ? Number(grams[1]) : null, note: c.note, source
     };
   });
@@ -467,7 +473,8 @@ function refreshAll() {
 }
 
 function addRecipe(text, name) {
-  if (!text || !text.trim()) return;
+  if (!text || !text.trim()) { $("scan-status").textContent = "Type at least one ingredient first."; return; }
+  if (recipes.some(r => r.text === text.trim())) { $("scan-status").textContent = "That recipe is already on your list."; return; }
   recipes.push({ name: name || ("Recipe " + (recipes.length + 1)), text: text.trim() });
   save("rsa-recipes", recipes);
   $("recipe").value = "";
@@ -485,9 +492,12 @@ $("check").onclick = () => {
 };
 
 // Typed fractions (½ ¼ ¾) become 1/2 1/4 3/4, and a range like "2-3" uses the higher number.
-const FRACTION_CHARS = { "½": "1/2", "¼": "1/4", "¾": "3/4", "⅓": "1/3", "⅔": "2/3" };
+const FRACTION_CHARS = { "½": "1/2", "¼": "1/4", "¾": "3/4", "⅓": "1/3", "⅔": "2/3", "⅛": "1/8", "⅜": "3/8", "⅝": "5/8", "⅞": "7/8", "⅕": "1/5", "⅙": "1/6" };
 function cleanLine(raw) {
-  let s = raw.replace(/(\d)\s*([½¼¾⅓⅔])/g, (m, d, f) => `${d} ${FRACTION_CHARS[f]}`).replace(/[½¼¾⅓⅔]/g, f => FRACTION_CHARS[f]);
+  let s = raw.replace(/^[\s•·▢☐\-–*]+/, "").replace(/^\d+[.)]\s+/, "").replace(/⁄/g, "/").replace(/^\./, "0.");
+  // "1 (14 oz) can coconut milk" -> "1 coconut milk": drop the package size and the word can/jar/bottle.
+  s = s.replace(/^(\d+(?:\s+\d+\/\d+|\/\d+|\.\d+)?)\s*(?:\([^)]*\)\s*)?(?:cans?|bottles?|jars?|packages?|pkgs?)\s+/i, "$1 ");
+  s = s.replace(/(\d)\s*([½¼¾⅓⅔⅛⅜⅝⅞⅕⅙])/g, (m, d, f) => d + " " + FRACTION_CHARS[f]).replace(/[½¼¾⅓⅔⅛⅜⅝⅞⅕⅙]/g, f => FRACTION_CHARS[f]);
   let note = "";
   const range = s.match(/^(\d+(?:\.\d+)?)\s*(?:-|–|to)\s*(\d+(?:\.\d+)?)\s*(.*)$/);
   if (range) { s = `${range[2]} ${range[3]}`.trim(); note = `you typed ${range[1]} to ${range[2]}; the higher number is used`; }
@@ -507,7 +517,7 @@ function ingredientLinesFromScan(text) {
     .map(l => l.replace(/^[\s•·\-–—*|>]+/, "").replace(/\s+/g, " ").trim())
     .filter(l => l.length >= 2 && l.length <= 120)
     // Drop baking times, temperatures, method sentences and section headings.
-    .filter(l => !/\b(min|mins|minutes?|hours?|seconds?|bake|preheat|heat|until|serve|mix|stir|cook|oven|degrees?|method|directions|ingredients|grocery|list)\b|°|\b[FC]\b/i.test(l))
+    .filter(l => !/\b(min|mins|minutes?|hours?|seconds?|bake|preheat|heat|until|serve|serves|yield|makes|page|step|notes?|instructions?|equipment|nutrition|calories|method|directions|ingredients|grocery|list|whisk|combine|stir|cook|oven|degrees?)\b|°|\b[FC]\b|https?:|www\.|\d{1,2}\/\d{1,2}\/\d{2,4}|\(?\d{3}\)?[ .-]\d{3}[ .-]\d{4}/i.test(l))
     // Keep lines with an amount, or a plain item name such as "milk" (but not an all-capitals title).
     .filter(l => /\d|[½¼¾⅓⅔]|\b(tsp|tbsp|cups?|oz|g|lbs?|pinch|pieces?|leaf|leaves|small|medium|large|slices?|cloves?)\b/i.test(l)
       || (/^[A-Za-z][A-Za-z ,'()-]{1,40}$/.test(l) && l !== l.toUpperCase()));
