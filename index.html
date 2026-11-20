@@ -211,8 +211,8 @@ function parseAmount(line) {
 const NAME_NOISE = new Set(["room", "temp", "temperature", "softened", "pinch", "dash", "taste", "cloves", "clove", "minced", "chopped", "diced", "sliced", "grated", "crushed",
   "fresh", "large", "small", "medium", "whole", "of", "a", "an", "the", "and", "or", "optional", "to", "taste",
   "can", "cans", "bag", "bags", "box", "jar", "pack", "package", "about", "plus", "more", "some", "extra",
-  "finely", "roughly", "thinly", "peeled", "halved", "divided", "softened", "melted", "cold", "warm", "hot",
-  "boneless", "skinless", "packed", "unsalted", "salted", "yellow", "white", "extra", "virgin", "raw", "heaping", "level", "scant", "rounded"]);
+  "finely", "roughly", "thinly", "peeled", "halved", "divided", "melted", "cold", "warm",
+  "freshly", "handful", "crumbled", "packed", "unsalted", "salted", "yellow", "extra", "virgin", "raw", "heaping", "level", "scant", "rounded"]);
 const NAME_SYNONYMS = {
   "cheddar cheese": "cheddar", "shredded cheddar cheese": "shredded cheddar", "shredded cheese": "shredded cheddar",
   "scallion": "green onion", "spring onion": "green onion", "green onions": "green onion",
@@ -221,7 +221,8 @@ const NAME_SYNONYMS = {
   "kosher salt": "salt", "table salt": "salt", "fine salt": "salt", "sea salt": "salt",
   "all purpose flour": "flour", "all-purpose flour": "flour", "plain flour": "flour",
   "whole milk": "milk", "powdered sugar": "powdered sugar", "confectioners sugar": "powdered sugar",
-  "cream": "heavy cream", "cheddar cheese": "cheddar", "sharp cheddar": "cheddar", "jalapeno": "jalapeno", "ground black pepper": "black pepper"
+  "cream": "heavy cream", "cheddar cheese": "cheddar", "sharp cheddar": "cheddar", "jalapeno": "jalapeno", "ground black pepper": "black pepper",
+  "stock": "broth", "chicken stock": "chicken broth", "beef stock": "beef broth", "vegetable stock": "vegetable broth"
 };
 function singularWord(w) {
   if (w.length > 4 && /ies$/.test(w)) return w.slice(0, -3) + "y";
@@ -231,12 +232,45 @@ function singularWord(w) {
 }
 const TYPOS = { chickn: "chicken", chiken: "chicken", onyon: "onion", onions: "onion", vanila: "vanilla", vanilia: "vanilla",
   potatos: "potato", potatoe: "potato", oliveoil: "olive oil", rise: "rice", tomatos: "tomato", garlc: "garlic", cilantr: "cilantro",
-  flour: "flour", sugr: "sugar", buter: "butter", pepr: "pepper", parmesian: "parmesan", jalapeno: "jalapeno" };
+  flour: "flour", sugr: "sugar", buter: "butter", pepr: "pepper", parmesian: "parmesan", jalapeno: "jalapeno",
+  stok: "stock", pase: "paste", oyl: "oil", veg: "vegetable", tumeric: "turmeric", garlick: "garlic" };
+// Words the page knows. A word close to one of these (1 wrong letter for short words, 2 for long) is fixed to it.
+const KNOWN_WORDS = ["chicken", "beef", "pork", "turkey", "salmon", "shrimp", "onion", "garlic", "ginger", "tomato", "potato", "carrot", "celery",
+  "pepper", "cumin", "turmeric", "cinnamon", "paprika", "oregano", "basil", "parsley", "cilantro", "thyme", "rosemary", "chili", "sugar", "flour",
+  "butter", "cheese", "cheddar", "parmesan", "mozzarella", "milk", "cream", "yogurt", "egg", "rice", "pasta", "bread", "oats", "lemon", "lime",
+  "orange", "apple", "banana", "spinach", "broccoli", "zucchini", "cabbage", "lettuce", "mushroom", "broth", "vinegar", "honey", "syrup", "vanilla",
+  "cocoa", "beans", "chickpea", "lentil", "peanut", "almond", "walnut", "pecan", "raisin", "cornmeal", "breadcrumb", "nutmeg", "allspice",
+  "cardamom", "coriander", "sesame", "sauce", "paste", "tahini", "feta", "salsa", "olive", "vegetable", "canola", "shallot", "scallion", "leek",
+  "eggplant", "cucumber", "avocado", "tortilla", "masala", "ribeye", "sirloin", "thighs", "breast", "oregano"];
+function editDistance(a, b) {
+  const d = [];
+  for (let i = 0; i <= a.length; i++) { d[i] = [i]; }
+  for (let j = 0; j <= b.length; j++) { d[0][j] = j; }
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+  }
+  return d[a.length][b.length];
+}
+function fixSpelling(w) {
+  if (w.length < 5 || KNOWN_WORDS.indexOf(w) !== -1) return w;
+  const limit = w.length >= 8 ? 2 : 1;
+  let best = w, bestD = 99;
+  for (const k of KNOWN_WORDS) {
+    const dd = editDistance(w, k);
+    if (dd < bestD) { bestD = dd; best = k; }
+  }
+  return bestD <= limit ? best : w;
+}
 function normName(text) {
   let s = text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\([^)]*\)/g, " ").replace(/,.*$/, " ");
   s = s.replace(/extra[- ]virgin/g, " ");
+  // "for garnish" and "ground" in front of a spice do not change which item you buy.
+  s = s.replace(/\bfor (garnish|serving|serve|topping|decoration)\b/g, " ");
+  s = s.replace(/\bground (?=(cumin|turmeric|tumeric|cinnamon|coriander|paprika|cayenne|ginger|nutmeg|allspice|cloves?|black pepper|pepper|chili|chilli)\b)/g, " ");
   s = s.replace(/[^a-z\s-]/g, " ").replace(/\s+/g, " ").trim();
-  let words = s.split(" ").map(w => TYPOS[w] || w).filter(w => w && !NAME_NOISE.has(w)).map(singularWord);
+  let words = s.split(" ").map(w => TYPOS[w] || (NAME_NOISE.has(w) ? w : fixSpelling(w))).filter(w => w && !NAME_NOISE.has(w)).map(singularWord);
   let key = words.join(" ").trim();
   if (NAME_SYNONYMS[key]) key = NAME_SYNONYMS[key];
   return key;
@@ -453,7 +487,7 @@ const CUP_GRAMS = {
   "oat": 90, "rolled oat": 90, "old-fashioned oat": 90,
   "flour": 120, "sugar": 200, "brown sugar": 213, "powdered sugar": 120, "rice": 185, "oats": 90,
   "cheddar": 113, "shredded cheese": 113, "shredded cheddar": 113, "grated parmesan": 100, "mozzarella": 113, "monterey jack": 113, "parmesan": 100, "butter": 227,
-  "breadcrumb": 108, "panko": 60, "cornmeal": 138, "cocoa": 85, "raisin": 150, "walnut": 120, "pecan": 110
+  "breadcrumb": 108, "panko": 60, "cornmeal": 138, "cocoa": 85, "raisin": 150, "walnut": 120, "pecan": 110, "feta": 135
 };
 // Lines that are headings or website text, not food.
 const NOT_FOOD = /^(for (the )?[\w\s]+|ingredients?|to serve|garnish|topping|jump to|print|advertisement|servings?|rate|pin|save|share|subscribe|notes?|directions|method|instructions?|nutrition|yield|leftovers?)s?:?$/i;
@@ -468,18 +502,28 @@ function parseRecipeText(text, source) {
     if (cols[0].toLowerCase() === "item" || /^format/i.test(cols[0])) return "";
     // "2 tbsp + 1/4 tsp" is one amount in this table: keep the first part.
     return cols[1] ? cols[1].split(" + ")[0] + " " + cols[0] : cols[0];
-  }).filter(Boolean).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l) && !WEB_JUNK.test(l)).filter(l => !(/^([A-Z][a-zA-Z'\-]*\s?){2,}$/.test(l) && !/\d/.test(l) && l.length < 45)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1)).filter(l => parseAmount(cleanLine(l).text) !== null || /to taste|pinch|dash/i.test(l) || (l.split(" ").length <= 4 && !/[.!?]/.test(l))).map(original => {
+  }).filter(Boolean).filter((l, i, arr) => !(/^[A-Z][a-zA-Z'\-]*$/.test(l) && /^(ingredients?|serves|yield|print|makes)\b/i.test(arr[i + 1] || ""))).filter(l => !/:$/.test(l) && !NOT_FOOD.test(l) && !WEB_JUNK.test(l)).filter(l => !(/^([A-Z][a-zA-Z'\-]*\s?){2,}$/.test(l) && !/\d/.test(l) && l.length < 45)).filter(l => l.length <= 110 && !(METHOD_WORDS.test(l) && l.indexOf("|") === -1)).filter(l => parseAmount(cleanLine(l).text) !== null || /to taste|pinch|dash/i.test(l) || (l.split(" ").length <= 4 && !/[.!?]/.test(l))).map(original => {
     const c = cleanLine(original);
     const parsed = parseAmount(c.text);
-    const grams = c.text.match(/\((\d+(?:\.\d+)?)\s*g\)/i);
+    // Read the grams from the original line: cleanLine has already removed the brackets from c.text.
+    const grams = original.match(/\((\d+(?:\.\d+)?)\s*g\)/i);
     const rawName = parsed ? parsed.name.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim() : c.text;
-    const display = rawName.replace(/^[,\s]+/, "").replace(/,.*$/, "").trim() || c.text;
+    // "chicken thighs, boneless" keeps "boneless" in front; "beef (ribeye)" keeps the cut.
+    const headName = rawName.replace(/^[,\s]+/, "").replace(/,.*$/, "").trim();
+    const tailMod = (rawName.match(/,\s*((?:boneless|skinless)[\w\s]*)$/i) || [])[1];
+    const cutWord = (original.match(/\((ribeye|sirloin|flank|chuck|skirt|tenderloin|brisket)\)/i) || [])[1];
+    let display = ((tailMod ? tailMod.trim() + " " : "") + headName).trim() || c.text;
+    if (cutWord) display = cutWord.toLowerCase() + " " + display;
     const noAmount = !parsed;   // "milk" with no amount counts as one, and says so
     let key = normName(display);
     if (!key || /^(cups?|tsp|tbsp|oz|lbs?|g|pt|pints?|pinch|dash|cans?|jars?)$/.test(key)) key = original.toLowerCase().replace(/\s+/g, " ").trim();
     let family = noAmount ? "count" : parsed.family;
     let base = noAmount ? 1 : parsed.base;
-    let amountText = noAmount ? (/to taste|pinch|dash/i.test(original) ? "small amount, check your shelf" : "1 (no amount given)") : parsed.amountText;
+    let amountText = noAmount ? (/to taste|pinch|dash|handful/i.test(original) ? "small amount, check your shelf" : "1 (no amount given)") : parsed.amountText;
+    // Keep the words a shopper needs: "3 cloves" (not just "3") and "1 can (14.5 oz)".
+    if (!noAmount && /clove/i.test(original)) amountText += " cloves";
+    const canSize = original.match(/\((\d+(?:\.\d+)?)\s*oz\)\s*can/i);
+    if (!noAmount && canSize) amountText += " can (" + canSize[1] + " oz)";
     // A cup of a dry good is bought by weight (1 cup flour is about 120 g), never as fluid ounces.
     const dryKey = /cheese/.test(key) ? "cheddar" : /\bcooked\b/i.test(original) ? null : Object.keys(CUP_GRAMS).find(k => key === k || key.endsWith(" " + k));
     if (!noAmount && family === "volume" && dryKey && /cup|tbsp|tsp|tbs/i.test(amountText)) {
@@ -487,7 +531,7 @@ function parseRecipeText(text, source) {
       family = "mass";
     }
     return {
-      raw: original, name: display, key, parsed: true,
+      raw: original, name: display, parsed: true,
       family, base, amountText,
       grams: grams ? Number(grams[1]) : null, note: c.note, source
     };
