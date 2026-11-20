@@ -84,6 +84,7 @@
       <input id="photo" type="file" accept="image/*,application/pdf,.pdf">
       <p class="status" id="scan-status"></p>
     </div>
+      <div id="recipe-list" hidden></div>
   </section>
   <section class="page" aria-labelledby="h-wants">
     <h2 id="h-wants">Add something to the list</h2>
@@ -331,39 +332,81 @@ function renderAll() {
   renderList();
 }
 
-// Reads the recipe box into lines. Runs as you type, and again when you press Check.
-// Only pressing Check clears old answers when the recipe is a different one.
-function readRecipeBox() {
-  lines = $("recipe").value.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(original => {
+// ---------- recipes: every recipe you add is kept, and the grocery list covers all of them ----------
+// recipes = [{name, text}]. The box is a preview of what you are typing; Check adds it to the list.
+let recipes = load("rsa-recipes", []);
+
+function parseRecipeText(text, source) {
+  return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(original => {
     const c = cleanLine(original);
     const parsed = parseAmount(c.text);
     const grams = c.text.match(/\((\d+(?:\.\d+)?)\s*g\)/i);
     const rawName = parsed ? parsed.name.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim() : c.text;
-    const display = rawName.replace(/^[,\s]+/, "").replace(/,.*$/, "").trim() || c.text;   // a name is never empty
-    // A line with no amount ("milk") counts as one, and says so.
-    const noAmount = !parsed;
+    const display = rawName.replace(/^[,\s]+/, "").replace(/,.*$/, "").trim() || c.text;
+    const noAmount = !parsed;   // "milk" with no amount counts as one, and says so
     return {
       raw: original, name: display, key: normName(display), parsed: true,
       family: noAmount ? "count" : parsed.family,
       base: noAmount ? 1 : parsed.base,
       amountText: noAmount ? "no amount typed (1 assumed)" : parsed.amountText,
-      grams: grams ? Number(grams[1]) : null, note: c.note
+      grams: grams ? Number(grams[1]) : null, note: c.note, source
     };
   });
+}
+
+function refreshRecipesUI() {
+  const box = $("recipe-list");
+  box.textContent = "";
+  if (recipes.length === 0) { box.hidden = true; return; }
+  box.hidden = false;
+  box.append(el("p", "Recipes on your list (" + recipes.length + "):", "hint"));
+  recipes.forEach((r, i) => {
+    const row = el("p", undefined, "status");
+    const count = parseRecipeText(r.text, r.name).length;
+    row.append(el("span", r.name + " (" + count + " ingredients) "));
+    const del = el("button", "Remove", "soft tiny");
+    del.onclick = () => { recipes.splice(i, 1); save("rsa-recipes", recipes); refreshAll(); };
+    row.append(del);
+    box.append(row);
+  });
+  const clear = el("button", "Clear all recipes", "soft tiny");
+  clear.onclick = () => { recipes = []; save("rsa-recipes", recipes); pantry = {}; save("rsa-pantry", pantry); refreshAll(); };
+  box.append(clear);
+}
+
+// Everything on the list: saved recipes plus the box, if it has text.
+function allRecipeLines() {
+  let out = [];
+  recipes.forEach(r => { out = out.concat(parseRecipeText(r.text, r.name)); });
+  const pending = $("recipe").value;
+  if (pending.trim()) out = out.concat(parseRecipeText(pending, "box"));
+  return out;
+}
+
+function refreshAll() {
+  lines = allRecipeLines();
   $("list-card").hidden = lines.length === 0 && wants.length === 0;
   $("have-card").hidden = lines.length === 0;
-  save("rsa-recipe", $("recipe").value);
+  refreshRecipesUI();
   renderAll();
 }
+
+function addRecipe(text, name) {
+  if (!text || !text.trim()) return;
+  recipes.push({ name: name || ("Recipe " + (recipes.length + 1)), text: text.trim() });
+  save("rsa-recipes", recipes);
+  $("recipe").value = "";
+  refreshAll();
+}
+
 let typingTimer = null;
 $("recipe").addEventListener("input", () => {
   clearTimeout(typingTimer);
-  typingTimer = setTimeout(readRecipeBox, 250);
+  typingTimer = setTimeout(refreshAll, 250);
 });
 $("check").onclick = () => {
-  if ($("recipe").value !== load("rsa-checked", "")) { pantry = {}; save("rsa-pantry", pantry); }
-  save("rsa-checked", $("recipe").value);
-  readRecipeBox();
+  const text = $("recipe").value;
+  if (text.trim()) addRecipe(text, null);
 };
 
 // Typed fractions (½ ¼ ¾) become 1/2 1/4 3/4, and a range like "2-3" uses the higher number.
@@ -477,7 +520,7 @@ $("photo").addEventListener("change", async () => {
       status.textContent = "No ingredient lines found. Try a closer, straighter photo, or type the list in.";
       return;
     }
-    $("recipe").value = found.join("\n");
+    addRecipe(found.join("\n"), file.name);
     status.textContent = `Found ${found.length} ingredient lines. Check them below, fix any mistakes, then press Check this recipe.`;
   } catch (err) {
     status.textContent = "That file could not be read. Try another file, or type the list in.";
@@ -531,6 +574,7 @@ $("want-clear").onclick = () => { wants = []; save("rsa-wants", wants); updateVi
 const savedRecipe = load("rsa-recipe", "");
 if (savedRecipe) { $("recipe").value = savedRecipe; $("check").onclick(); }
 renderWants();
+refreshAll();
 updateVisibility();
 </script>
 </body>
