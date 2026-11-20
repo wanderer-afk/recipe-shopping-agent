@@ -48,6 +48,7 @@
   .scan { border-top:2px dashed var(--rule); margin-top:14px; padding-top:12px; }
   .filebtn { display:inline-block; padding:9px 16px; border-radius:999px; background:#fff8e6; border:1px solid var(--rule); cursor:pointer; color:var(--ink); }
   #photo { display:block; margin-top:8px; max-width:100%; }
+  tr.catrow td { font-weight:bold; background:#efe6cf; color:var(--tomato); padding-top:12px; border-bottom:2px solid var(--rule); }
   [hidden] { display:none !important; }
   @media print {
     body { background:#fff; }
@@ -276,6 +277,49 @@ function setAnswer(key, value) {
   renderAll();
 }
 
+// ---------- groups the grocery list by aisle, so you shop one section at a time ----------
+const LIST_ORDER = ["Produce", "Meat & seafood", "Dairy & eggs", "Frozen", "Bread & bakery", "Baking", "Pantry & spices", "Household", "Other"];
+const CATEGORY_RULES = [
+  ["Frozen", /\b(frozen|hash browns?|ice cream|frozen peas)\b/],
+  ["Meat & seafood", /\b(chicken|beef|pork|lamb|bacon|sausage|turkey|salmon|shrimp|fish|steak|thighs?|breasts?|tuna|cod|clams?|meat|ham|ground)\b/],
+  ["Dairy & eggs", /\b(milk|cream|butter|cheese|parmesan|mozzarella|ricotta|yogurt|eggs?|cheddar|jack|cream cheese)\b/],
+  ["Bread & bakery", /\b(bread|tortillas?|buns?|baguettes?|pitas?|naan|bagels?)\b/],
+  ["Baking", /\b(flour|sugar|baking|yeast|vanilla|cocoa|cornstarch|chocolate chips)\b/],
+  ["Household", /\b(soap|towels?|foil|freezer bags?|paper|detergent|plastic wrap|sponges?|wrap|bags?)\b/],
+  ["Pantry & spices", /\b(pasta|spaghetti|penne|ziti|rice|oil|vinegar|sauce|paste|salt|pepper|cumin|paprika|cinnamon|thyme|oregano|powder|seasoning|nutmeg|honey|mustard|mayo|mayonnaise|broth|stock|crushed|canned|chipotle|wine|water|dill|flakes|dried|syrup|peanut butter)\b/],
+  ["Produce", /\b(onions?|garlic|peppers?|tomato(es)?|potato(es)?|carrots?|lettuce|spinach|apples?|bananas?|lemons?|limes?|cilantro|parsley|basil|ginger|scallions?|cucumbers?|avocados?|mushrooms?|sprouts|green beans?|celery|cabbage|herbs?|berries|fruit|broccoli|zucchini|eggplant|shallots?|leeks?|cloves garlic)\b/],
+];
+
+function categoryOf(name) {
+  const n = name.toLowerCase();
+  for (const [cat, rx] of CATEGORY_RULES) if (rx.test(n)) return cat;
+  return "Other";
+}
+
+// Rebuilds the list table so rows are grouped under a heading per section.
+function groupListRows() {
+  const body = $("list-body");
+  const rows = Array.from(body.querySelectorAll("tr"));
+  if (rows.length === 0) return;
+  const groups = {};
+  rows.forEach(tr => {
+    const cat = categoryOf(tr.cells[0].textContent);
+    (groups[cat] = groups[cat] || []).push(tr);
+  });
+  body.textContent = "";
+  LIST_ORDER.forEach(cat => {
+    if (!groups[cat]) return;
+    const head = document.createElement("tr");
+    head.className = "catrow";
+    const td = document.createElement("td");
+    td.colSpan = 4;
+    td.textContent = cat;
+    head.appendChild(td);
+    body.appendChild(head);
+    groups[cat].forEach(tr => body.appendChild(tr));
+  });
+}
+
 function renderList() {
   const body = $("list-body");
   body.textContent = "";
@@ -322,6 +366,7 @@ function renderList() {
     body.append(tr);
   });
 
+  groupListRows();
   $("list-note").textContent = unanswered > 0
     ? `${unanswered} ingredient(s) are on the list until you tap We have it for anything you already own.`
     : (rows === 0 ? "Nothing to buy right now. The cupboard is full." : "Every ingredient has an answer. Shop from this list.");
