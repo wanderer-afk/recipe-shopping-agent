@@ -7,8 +7,7 @@ Built by Bailey as a student project for the Codecademy course "Building Agentic
 Claude (an AI assistant) helped with parts of the code, the page design and the write-up; Bailey set
 the goals, made the decisions and tested the results. Not affiliated with or endorsed by Codecademy.
 
-**Status:** the checker page and the three Python tools work. The AI-agent step (the part that
-will let a model call these tools) is not built yet.
+**Status:** the checker page, the three Python tools and a first AI agent (`agent.py`) work. The agent is tested on one sample question.
 
 ## What is in this repo
 | File | What it does |
@@ -23,6 +22,7 @@ will let a model call these tools) is not built yet.
 | `grocery_items_and_prices.pdf` | The checked-prices sheet as a PDF. |
 | `showcase_prices_EXAMPLE_made_up.csv` / `.pdf` | Made-up example prices for demos. **Not real.** |
 | `make_pdfs.py` | Rebuilds the two PDFs from their CSV files. |
+| `agent.py` | The AI step: a small agent that calls the three tools, using a free model on your own computer (Ollama). |
 | `sample_recipes/Sample Pancakes.md` | A made-up recipe for testing. |
 | `sample_items.csv` | 12 rows from the staples list, as a small example. |
 | `pantry.example.json` | A blank-style pantry list. Copy it to `pantry.json` to use it. |
@@ -94,8 +94,20 @@ Notes written in our own words from the class lessons. Teacher materials are not
 - **Week 6 (automation):** login details live in saved credentials, not in files. This is why `.env`
   is ignored by git.
 
+## Live page
+The checker also runs online with no install: https://wanderer-afk.github.io/recipe-shopping-agent/
+(GitHub Pages serves `index.html` as a web page. Your answers stay in your own browser.)
+
+## AI step (agent.py)
+The agent reads your question, picks one of the three tools, runs it, and repeats for at most 6 steps.
+It only reads recipes and prices; it never changes a list. It needs no API key.
+1. Install Ollama (free) from https://ollama.com and run `ollama pull gemma3:12b`.
+2. Run `python agent.py "What do I need to buy for Sample Pancakes.md?"`.
+Tested once on the sample recipe: it used the shopping split tool and listed milk, large eggs, butter and maple syrup.
+Other local models can be chosen with the `OLLAMA_MODEL` setting.
+
 ## Limits
-- The AI step is not built, so nothing reads your recipe in natural language yet.
+- The AI step has been tested on one question only. Small local models can pick the wrong tool.
 - Name matching is by plain text. "Milk" and "whole milk" match, but a different word for the same food may not.
 - Packs counted in bunches, cans or dozens are flagged for you to check, except dozen eggs.
 - The page has been tested in a desktop browser. It has not been tested on a phone.
