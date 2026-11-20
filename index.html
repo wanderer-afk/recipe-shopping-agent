@@ -69,9 +69,9 @@
       <button class="soft" id="sample">Use the example</button>
     </p>
     <div class="scan">
-      <p class="hint"><strong>Or take a photo of the recipe.</strong> Choose a photo or take one with your phone camera. The text is read on your own device. The photo is not uploaded anywhere. Then check the words it found and fix any mistakes before you press Check.</p>
-      <label class="filebtn" for="photo">Choose a recipe photo</label>
-      <input id="photo" type="file" accept="image/*" capture="environment">
+      <p class="hint"><strong>Or add a recipe as a photo or a PDF.</strong> Choose a file, or take a photo with your phone camera. The text is read on your own device. The photo is not uploaded anywhere. Then check the words it found and fix any mistakes before you press Check.</p>
+      <label class="filebtn" for="photo">Choose a recipe photo or PDF</label>
+      <input id="photo" type="file" accept="image/*,application/pdf,.pdf">
       <p class="status" id="scan-status"></p>
     </div>
   </section>
@@ -380,6 +380,56 @@ function ingredientLinesFromScan(text) {
     // Drop baking times, temperatures and method sentences: they are not ingredients.
     .filter(l => !/\b(min|mins|minutes?|hours?|seconds?|bake|preheat|heat|until|serve|mix|stir|cook|oven|degrees?)\b|°|\b[FC]\b/i.test(l));
 }
+// PDF reader (pdf.js 3.11.174), loaded only when a PDF is chosen, with fingerprints.
+function loadScript(src, integrity) {
+  return new Promise((resolve, reject) => {
+    const tag = document.createElement("script");
+    tag.src = src; tag.integrity = integrity; tag.crossOrigin = "anonymous";
+    tag.onload = resolve; tag.onerror = reject;
+    document.head.appendChild(tag);
+  });
+}
+let pdfReady = null;
+function loadPdfReader() {
+  if (window.pdfjsLib) return Promise.resolve();
+  if (!pdfReady) pdfReady = loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+    "sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e")
+    .then(() => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; });
+  return pdfReady;
+}
+// Read a PDF: use its text if it has any; a scanned PDF is drawn page by page and read like a photo.
+async function readPdf(file, status) {
+  await loadPdfReader();
+  const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+  let text = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const content = await (await pdf.getPage(i)).getTextContent();
+    let lastY = null;
+    for (const item of content.items) {
+      const y = item.transform[5];
+      if (lastY !== null && Math.abs(y - lastY) > 2) text += "\n";
+      text += item.str + " ";
+      lastY = y;
+    }
+    text += "\n";
+  }
+  if (text.replace(/\s/g, "").length > 20) return text;
+  // No text layer: draw each page and read it with the photo reader.
+  await loadTextReader();
+  let scanned = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    status.textContent = `Reading page ${i} of ${pdf.numPages} (scanned pages take longer)...`;
+    const page = await pdf.getPage(i);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width; canvas.height = viewport.height;
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+    const result = await Tesseract.recognize(canvas, "eng");
+    scanned += result.data.text + "\n";
+  }
+  return scanned;
+}
+
 // The text reader is downloaded only when a photo is chosen, with a fingerprint so a changed copy will not run.
 function loadTextReader() {
   if (window.Tesseract) return Promise.resolve();
@@ -396,14 +446,22 @@ $("photo").addEventListener("change", async () => {
   const file = $("photo").files[0];
   const status = $("scan-status");
   if (!file) return;
-  status.textContent = "Loading the text reader (one time)...";
-  try { await loadTextReader(); } catch (e) { status.textContent = "The text reader could not load. Check your internet connection and try again."; return; }
-  status.textContent = "Reading the photo... this can take a minute the first time.";
+  const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
   try {
-    const result = await Tesseract.recognize(file, "eng", {
-      logger: m => { if (m.status === "recognizing text") status.textContent = `Reading the photo... ${Math.round(m.progress * 100)}%`; }
-    });
-    const found = ingredientLinesFromScan(result.data.text);
+    let text;
+    if (isPdf) {
+      status.textContent = "Reading the PDF...";
+      text = await readPdf(file, status);
+    } else {
+      status.textContent = "Loading the text reader (one time)...";
+      await loadTextReader();
+      status.textContent = "Reading the photo... this can take a minute the first time.";
+      const result = await Tesseract.recognize(file, "eng", {
+        logger: m => { if (m.status === "recognizing text") status.textContent = `Reading the photo... ${Math.round(m.progress * 100)}%`; }
+      });
+      text = result.data.text;
+    }
+    const found = ingredientLinesFromScan(text);
     if (found.length === 0) {
       status.textContent = "No ingredient lines found. Try a closer, straighter photo, or type the list in.";
       return;
@@ -411,7 +469,7 @@ $("photo").addEventListener("change", async () => {
     $("recipe").value = found.join("\n");
     status.textContent = `Found ${found.length} ingredient lines. Check them below, fix any mistakes, then press Check this recipe.`;
   } catch (err) {
-    status.textContent = "The photo could not be read. Try another photo or type the list in.";
+    status.textContent = "That file could not be read. Try another file, or type the list in.";
   }
 });
 
