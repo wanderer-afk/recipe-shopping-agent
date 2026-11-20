@@ -49,6 +49,12 @@
   .filebtn { display:inline-block; padding:9px 16px; border-radius:999px; background:#fff8e6; border:1px solid var(--rule); cursor:pointer; color:var(--ink); }
   #photo { display:block; margin-top:8px; max-width:100%; }
   [hidden] { display:none !important; }
+  @media print {
+    body { background:#fff; }
+    main > section:not(#list-card) { display:none !important; }
+    #list-card { box-shadow:none; border:none; margin:0; }
+    #list-card button, #list-card .status { display:none !important; }
+  }
 </style>
 </head>
 <body>
@@ -60,35 +66,6 @@
   </header>
 
 
-  <section class="page" aria-labelledby="h-wants">
-    <h2 id="h-wants">Add something to the list</h2>
-    <p class="hint">Type one item, like milk, and press Add to list. No recipe needed.</p>
-    <label for="want-input">Item</label>
-    <input id="want-input" type="text" placeholder="for example: dish soap">
-    <p><button id="want-add">Add to list</button></p>
-    <ul id="want-list" style="padding-left:20px"></ul>
-    <p><button class="soft tiny" id="want-clear">Clear this list</button></p>
-  </section>
-  <section class="page" id="list-card" hidden aria-labelledby="h-list">
-    <p class="grocery-title" id="h-list">Grocery list</p>
-    <p class="grocery-sub">What to buy, in amounts stores sell</p>
-    <table class="box">
-      <thead><tr><th>Item</th><th>Need</th><th>Buy</th><th>Estimate (NOT REAL)</th></tr></thead>
-      <tbody id="list-body"></tbody>
-    </table>
-    <p class="note" id="list-note"></p>
-    <p><button id="save-list">Save grocery list (text file)</button> <button class="soft" onclick="window.print()">Print or save as PDF</button></p>
-    <p class="status"><strong>ESTIMATES ARE ROUGH GUESSES. THEY ARE NOT REAL OR ACCURATE, AND NOT CHECKED AGAINST ANY STORE.</strong></p>
-  </section>
-  <section class="page" id="have-card" hidden aria-labelledby="h-have">
-    <h2 id="h-have">2. What do we already have?</h2>
-    <p class="hint">Tap one answer for each ingredient. Your answers stay on this computer.</p>
-    <table>
-      <thead><tr><th>Ingredient</th><th>Amount</th><th>Answer</th></tr></thead>
-      <tbody id="have-body"></tbody>
-    </table>
-    <p><button class="soft tiny" id="clear-pantry">Clear all answers</button></p>
-  </section>
 
 
 
@@ -107,6 +84,35 @@
       <input id="photo" type="file" accept="image/*,application/pdf,.pdf">
       <p class="status" id="scan-status"></p>
     </div>
+  </section>
+  <section class="page" aria-labelledby="h-wants">
+    <h2 id="h-wants">Add something to the list</h2>
+    <p class="hint">Type one item, like milk, and press Add to list. No recipe needed.</p>
+    <label for="want-input">Item</label>
+    <input id="want-input" type="text" placeholder="for example: dish soap">
+    <p><button id="want-add">Add to list</button></p>
+    <ul id="want-list" style="padding-left:20px"></ul>
+    <p><button class="soft tiny" id="want-clear">Clear this list</button></p>
+  </section>
+  <section class="page" id="have-card" hidden aria-labelledby="h-have">
+    <h2 id="h-have">2. What do we already have?</h2>
+    <p class="hint">Tap one answer for each ingredient. Your answers stay on this computer.</p>
+    <table>
+      <thead><tr><th>Ingredient</th><th>Amount</th><th>Answer</th></tr></thead>
+      <tbody id="have-body"></tbody>
+    </table>
+    <p><button class="soft tiny" id="clear-pantry">Clear all answers</button></p>
+  </section>
+  <section class="page" id="list-card" hidden aria-labelledby="h-list">
+    <p class="grocery-title" id="h-list">Grocery list</p>
+    <p class="grocery-sub">What to buy, in amounts stores sell</p>
+    <table class="box">
+      <thead><tr><th>Item</th><th>Need</th><th>Buy</th><th>Estimate (NOT REAL)</th></tr></thead>
+      <tbody id="list-body"></tbody>
+    </table>
+    <p class="note" id="list-note"></p>
+    <p><button id="save-list">Save grocery list (text file)</button> <button class="soft" onclick="window.print()">Print or save as PDF</button></p>
+    <p class="status"><strong>ESTIMATES ARE ROUGH GUESSES. THEY ARE NOT REAL OR ACCURATE, AND NOT CHECKED AGAINST ANY STORE.</strong></p>
   </section>
 </main>
 
