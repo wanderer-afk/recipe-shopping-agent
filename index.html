@@ -274,17 +274,24 @@ function renderHave() {
   const body = $("have-body");
   body.textContent = "";
   const labels = { true: "At home", more: "At home, buying more", false: "Need to buy" };
+  // One row per item name, so "2 cloves garlic" and "1 tsp minced garlic" are shown together.
+  const byKey = new Map();
   lines.forEach(line => {
+    const g = byKey.get(line.key) || { name: line.name, key: line.key, amounts: [] };
+    g.amounts.push(line.amountText || line.raw);
+    byKey.set(line.key, g);
+  });
+  byKey.forEach(g => {
     const tr = el("tr", undefined, "dotted");
-    const state = pantry[line.key];
-    tr.append(el("td", line.name), el("td", line.amountText || line.raw));
+    const state = pantry[g.key];
+    tr.append(el("td", g.name), el("td", g.amounts.join(" + ")));
     const td = el("td", undefined, "row-actions");
     const haveBtn = el("button", "We have it", "tiny");
     const moreBtn = el("button", "Want more", "soft tiny");
     const needBtn = el("button", "We need it", "soft tiny");
-    haveBtn.onclick = () => setAnswer(line.key, true);
-    moreBtn.onclick = () => setAnswer(line.key, "more");
-    needBtn.onclick = () => setAnswer(line.key, false);
+    haveBtn.onclick = () => setAnswer(g.key, true);
+    moreBtn.onclick = () => setAnswer(g.key, "more");
+    needBtn.onclick = () => setAnswer(g.key, false);
     td.append(haveBtn, moreBtn, needBtn);
     td.append(el("div", state === undefined ? "Not answered yet" : labels[state], "status"));
     tr.append(td);
