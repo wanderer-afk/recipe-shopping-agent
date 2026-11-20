@@ -367,7 +367,8 @@ function updateVisibility() {
 function ingredientLinesFromScan(text) {
   return text.split(/\r?\n/)
     .map(l => l.replace(/^[\s•·\-–—*|>]+/, "").replace(/\s+/g, " ").trim())
-    .filter(l => /^(\d|[½¼¾⅓⅔]|\d+\/\d+)/.test(l) && l.length >= 3 && l.length <= 90);
+    // Keep a line if it has an amount anywhere: "Water 1 tbsp" or "2 eggs" both count.
+    .filter(l => /(\d|[½¼¾⅓⅔]|\b(tsp|tbsp|cups?|oz|g|lbs?|pinch|pieces?|leaf|leaves|small|medium|large|slices?|cloves?)\b)/i.test(l) && l.length >= 3 && l.length <= 120);
 }
 $("photo").addEventListener("change", async () => {
   const file = $("photo").files[0];
