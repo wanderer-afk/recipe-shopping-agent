@@ -205,7 +205,7 @@ function parseAmount(line) {
 }
 
 // Same name on both sides: lower case, no brackets, no size words, plurals folded.
-// Turns any way of writing an item into one name, so people do not have to type it the same way.
+// Turns many ways of writing an item into one name: a list of known typos and synonyms, plus close spelling matches for longer words.
 // "2 cloves garlic", "garlic cloves", "minced garlic" and "garlic" all become "garlic".
 // "eggs" and "egg" become "egg". "scallions" and "green onions" become "green onion".
 const NAME_NOISE = new Set(["room", "temp", "temperature", "softened", "pinch", "dash", "taste", "cloves", "clove", "minced", "chopped", "diced", "sliced", "grated", "crushed",
@@ -433,7 +433,10 @@ function renderList() {
     if (!unparsed) n.unparsed = false;
     needs.set(key, n);
   }
+  // An item with a measured amount somewhere ("1/2 cup cilantro") ignores its no-amount lines ("cilantro for garnish").
+  const measuredKeys = new Set(lines.filter(l => !/no amount/.test(String(l.amountText))).map(l => l.key));
   lines.forEach(line => {
+    if (/no amount/.test(String(line.amountText)) && measuredKeys.has(line.key)) return;
     const answer = pantry[line.key];
     if (answer === undefined) unanswered++;   // not answered yet: still on the list until you tap We have it
     if (answer === true) return;
@@ -519,13 +522,15 @@ function parseRecipeText(text, source) {
     if (!key || /^(cups?|tsp|tbsp|oz|lbs?|g|pt|pints?|pinch|dash|cans?|jars?)$/.test(key)) key = original.toLowerCase().replace(/\s+/g, " ").trim();
     let family = noAmount ? "count" : parsed.family;
     let base = noAmount ? 1 : parsed.base;
-    let amountText = noAmount ? (/to taste|pinch|dash|handful/i.test(original) ? "small amount, check your shelf" : "1 (no amount given)") : parsed.amountText;
+    let amountText = noAmount ? (/to taste|pinch|dash|handful/i.test(original) ? "small amount, check your shelf" : (categoryOf(key) === "Pantry & spices" ? "to taste, check your shelf" : "1 (no amount given)")) : parsed.amountText;
+    // "a handful" of fresh produce (green beans, herbs) is a small buy, not a spice to check on the shelf.
+    if (noAmount && /handful/i.test(original) && categoryOf(key) === "Produce") { family = "mass"; base = 113.4; amountText = "about 1/4 lb (a handful)"; }
     // Keep the words a shopper needs: "3 cloves" (not just "3") and "1 can (14.5 oz)".
     if (!noAmount && /clove/i.test(original)) amountText += " cloves";
     const canSize = original.match(/\((\d+(?:\.\d+)?)\s*oz\)\s*can/i);
     if (!noAmount && canSize) amountText += " can (" + canSize[1] + " oz)";
     // A cup of a dry good is bought by weight (1 cup flour is about 120 g), never as fluid ounces.
-    const dryKey = /cheese/.test(key) ? "cheddar" : /\bcooked\b/i.test(original) ? null : Object.keys(CUP_GRAMS).find(k => key === k || key.endsWith(" " + k));
+    const dryKey = /cheese/.test(key) ? "cheddar" : /\bcooked\b/i.test(original) ? null : Object.keys(CUP_GRAMS).filter(k => key === k || key.endsWith(" " + k)).sort((a, b) => b.length - a.length)[0];
     if (!noAmount && family === "volume" && dryKey && /cup|tbsp|tsp|tbs/i.test(amountText)) {
       base = (base / 236.588) * CUP_GRAMS[dryKey];
       family = "mass";
