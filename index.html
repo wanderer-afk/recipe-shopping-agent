@@ -323,7 +323,12 @@ function estimateText(key) {
 
 // ---------- storage (kept on this computer; the page still works if the browser blocks it) ----------
 function load(key, fallback) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+  // Saved data with the wrong shape (a list where an object belongs, or null) is ignored, so a bad save cannot crash the page.
+  try {
+    const v = localStorage.getItem(key);
+    const out = v ? JSON.parse(v) : fallback;
+    return out !== null && typeof out === "object" && Array.isArray(out) === Array.isArray(fallback) ? out : fallback;
+  } catch (e) { return fallback; }
 }
 function save(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* nothing is remembered */ }
@@ -336,7 +341,7 @@ function el(tag, text, cls) { const n = document.createElement(tag); if (text !=
 let lines = [];                              // the recipe, as checked
 let pantry = load("rsa-pantry", {});         // key -> true (at home) | "more" (buy more) | false (need)
 let dropped = load("rsa-dropped", {});       // key -> true: "Not needed" on the list (Clear all answers puts it back)
-let wants = load("rsa-wants", []);           // plain list, no recipe
+let wants = load("rsa-wants", []).filter(w => typeof w === "string");   // plain list, no recipe
 
 function renderHave() {
   const body = $("have-body");
@@ -498,7 +503,7 @@ function renderAll() {
 
 // ---------- recipes: every recipe you add is kept, and the grocery list covers all of them ----------
 // recipes = [{name, text}]. The box is a preview of what you are typing; Check adds it to the list.
-let recipes = load("rsa-recipes", []);
+let recipes = load("rsa-recipes", []).filter(r => r && typeof r.text === "string" && typeof r.name === "string");
 
 // About how much a cup weighs for dry goods, so a cup of flour is bought by weight like a store sells it.
 const CUP_GRAMS = {

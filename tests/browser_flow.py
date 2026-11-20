@@ -204,6 +204,36 @@ with sync_playwright() as pw:
     after = page.locator("#recipe-list").inner_text().count("ingredients")
     check("symbol-only recipe: nothing added", after == before, "before %d after %d" % (before, after))
 
+    # 21. Round 12: a reload keeps recipes, hand items and "Not needed" choices (saved in this browser).
+    page.evaluate("localStorage.clear()")
+    page.reload()
+    page.wait_for_timeout(300)
+    page.fill("#recipe", "Soup\n2 cups stock\n1 onion\n3 cloves garlic")
+    page.click("#check")
+    page.wait_for_timeout(200)
+    page.fill("#want-input", "bananas")
+    page.click("#want-add")
+    page.wait_for_timeout(200)
+    n_before = page.locator("#recipe-list").inner_text().count("ingredients")
+    page.reload()
+    page.wait_for_timeout(500)
+    check("reload: recipes are still there", page.locator("#recipe-list").inner_text().count("ingredients") == n_before and n_before > 0)
+    check("reload: hand-added item is still there", "bananas" in page.locator("#want-list").inner_text())
+    first_item = page.locator("#list-body tr.dotted").first.locator("td").first.inner_text().split("\n")[0].strip()
+    page.locator("#list-body tr.dotted").first.get_by_role("button", name="Not needed").click()
+    page.wait_for_timeout(200)
+    page.reload()
+    page.wait_for_timeout(500)
+    check("reload: a Not needed item stays off the list", first_item not in list_text(page), first_item)
+
+    # 22. Round 12: broken saved data (not JSON, or the wrong shape) must not crash the page.
+    for bad in ["{not json", '{"a": 1}', "null", "[1, 2, \"x\"]"]:
+        page.evaluate("(v) => localStorage.setItem('rsa-recipes', v)", bad)
+        page.reload()
+        page.wait_for_timeout(300)
+        check("broken saved recipes (%s): page still loads" % bad[:12], page.locator("#list-body").count() == 1 and not errors, "; ".join(errors)[:160])
+        errors.clear()
+
     browser.close()
 
 failed = [n for n, ok in RESULTS if not ok]
