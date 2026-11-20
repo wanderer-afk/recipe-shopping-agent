@@ -279,7 +279,7 @@ function renderList() {
   const needs = new Map();
   lines.forEach(line => {
     const answer = pantry[line.key];
-    if (answer === undefined) { unanswered++; return; }
+    if (answer === undefined) unanswered++;   // not answered yet: still on the list until you tap We have it
     if (answer === true) return;
     const id = line.key + "|" + line.family;
     const n = needs.get(id) || { name: line.name, key: line.key, family: line.family, base: 0, amountText: [], grams: null, unparsed: !line.parsed };
@@ -316,7 +316,7 @@ function renderList() {
   });
 
   $("list-note").textContent = unanswered > 0
-    ? `${unanswered} ingredient(s) still need an answer above. Answer them, then this list is complete.`
+    ? `${unanswered} ingredient(s) are on the list until you tap We have it for anything you already own.`
     : (rows === 0 ? "Nothing to buy right now. The cupboard is full." : "Every ingredient has an answer. Shop from this list.");
 }
 
