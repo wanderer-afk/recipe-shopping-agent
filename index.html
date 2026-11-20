@@ -576,7 +576,7 @@ $("photo").addEventListener("change", async () => {
 });
 
 $("save-list").onclick = () => {
-  const rows = [...document.querySelectorAll("#list-body tr")].map(tr => "[ ] " + [...tr.cells].map(c => c.textContent).join("  |  "));
+  const rows = [...document.querySelectorAll("#list-body tr")].map(tr => tr.className === "catrow" ? "" + tr.textContent.toUpperCase() : "[ ] " + [...tr.cells].map(c => c.textContent).join("  |  "));
   const text = "Grocery list\n" + "=".repeat(12) + "\n" + (rows.length ? rows.join("\n") : "Nothing to buy yet.") + "\n\n" + $("list-note").textContent + "\n";
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
