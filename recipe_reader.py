@@ -23,7 +23,8 @@ def read_grocery_lines(recipe_file: Path) -> list[dict]:
     for raw_line in text.splitlines():
         line = raw_line.strip()
 
-        if line.startswith("## Grocery lines"):
+        # Any heading that mentions "Grocery lines", e.g. "## Grocery lines" or "## F. Grocery lines".
+        if line.startswith("#") and "grocery lines" in line.lower():
             found_heading = True
             continue
 
@@ -35,11 +36,14 @@ def read_grocery_lines(recipe_file: Path) -> list[dict]:
 
         if inside_block and "|" in line:
             parts = [part.strip() for part in line.split("|")]
+            # 4 columns: item | amount | aisle | pantry flag. Some recipes add a 5th "when" column; ignore it.
+            if len(parts) == 5:
+                parts = parts[:4]
             if len(parts) != 4:
-                continue  # skip any line that does not have 4 columns
+                continue
             item, amount, aisle, flag = parts
             if item.lower() == "item":
-                continue  # the header row (item | amount | aisle | flag) is not a grocery item
+                continue  # the header row is not a grocery item
             rows.append({"item": item, "amount": amount, "aisle": aisle, "flag": flag})
 
     return rows
