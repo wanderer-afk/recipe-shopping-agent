@@ -28,6 +28,25 @@ It can also answer questions about a recipe with a small AI agent that runs on y
 | `store_prices.example.csv` | Made-up prices showing the format for your own price file. Not real. |
 | `LICENSE` | MIT license. |
 
+## How the checker works (the short version)
+1. **Input:** you paste a recipe, pick a photo, or pick a PDF. Each recipe heading becomes its own recipe.
+2. **Reading:** each line is split into an amount and an item. "2 tbsp + 1/4 tsp" is added together, "1x 400g can chickpeas" is one can, and headings, website text and symbols are dropped.
+3. **Naming:** item names are cleaned so "Sugr", "sugar" and "2 tsp sugar (packed)" become one item. Known typos and plurals are fixed.
+4. **Merging:** the same item from several recipes is added up, then rounded up to a shop-friendly size ("at least 6 oz").
+5. **Your answers:** "We have it", "Want more" and "Not needed" take items off the list. Your recipes and answers are saved in your own browser only.
+
+**How well it works (last checked):**
+| Check | Result |
+|---|---|
+| Labelled lines (`tests/accuracy_cases.json`) | 27 of 27 right |
+| Page logic tests (`node tests/test_page.js`) | 14 pass |
+| Python tests (`python -m unittest discover -s tests`) | 14 pass |
+| Browser checks in Microsoft Edge (`python tests/browser_flow.py`) | 52 of 52 pass |
+
+**What the browser checks cover:** typos and junk lines, two recipes at once, a 3-page PDF, a 4-page PDF with five recipes, a single-column and a two-column photo, adding and removing items, "We have it" and "Not needed", duplicate pastes, hostile text (`<script>` is shown as text and never runs), a 2,000-line paste, saved data that survives a reload, broken saved data that does not crash the page, a phone-width layout with no sideways scroll, and keyboard-only use.
+
+**Still weak:** photo reading still makes mistakes on poor photos; a one-word typed title with no amount counts as an item; two items on one line joined with ";" are read as one; and the page is not yet tested on a real phone.
+
 ## Prerequisites
 - **Python 3.10 or newer** (for the three Python tools). Check with `python --version`.
 - **A web browser** for `index.html` (Chrome, Edge, Firefox or Safari).
@@ -124,7 +143,7 @@ Other local models can be chosen with the `OLLAMA_MODEL` setting.
 - The AI step has been tested on one question only. Small local models can pick the wrong tool.
 - Name matching is by plain text. "Milk" and "whole milk" match, but a different word for the same food may not.
 - Bunches, cans, bags and rolls are counted as whole items (for example 'at least 1' bunch or 2 cans). Nothing is guessed about their weight.
-- The page has been tested in a desktop browser. It has not been tested on a phone.
+- The page has been tested in a desktop browser and in a phone-sized browser window (375 px wide) for layout. It has not been tested on a real phone.
 
 ## Files and privacy
 Your recipes, photos and answers are never uploaded. The page loads its photo reader (from cdn.jsdelivr.net) and its PDF reader (from cdnjs.cloudflare.com) only when you choose a file.
