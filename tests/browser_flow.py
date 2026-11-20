@@ -129,6 +129,31 @@ with sync_playwright() as pw:
     page.wait_for_timeout(300)
     check("not needed: clear answers puts it back", first_item in list_text(page), first_item)
 
+    # 13. Round 9: a 4-page PDF with five recipes (one page has two). Each heading becomes its own recipe, not an item.
+    page.set_input_files("#photo", str(FILES / "round9_four_pages.pdf"))
+    page.wait_for_function("document.querySelector('#scan-status').textContent.startsWith('Found')", timeout=90000)
+    page.wait_for_timeout(500)
+    rec = page.locator("#recipe-list").inner_text()
+    check("5-recipe PDF: five recipes on the list", "Recipes on your list" in rec and rec.count("ingredients)") >= 5, rec[:200])
+    item_names = [r.split("\t")[0].strip().lower() for r in list_text(page).split("\n") if "\t" in r]
+    check("5-recipe PDF: headings are not items", not any(h in item_names for h in ["japchae", "spanakopita", "chilaquiles rojos", "tom yum goong", "chicken tikka masala"]), str(item_names)[:200])
+
+    # 14. Round 9: a two-column photo is read column by column.
+    page.set_input_files("#photo", str(FILES / "round9_photo_two_columns.png"))
+    try:
+        page.wait_for_function("document.querySelector('#list-body').innerText.toLowerCase().includes('sesame oil')", timeout=180000)
+        check("two-column photo: sesame oil read from the left column", True)
+    except Exception:
+        check("two-column photo: sesame oil read from the left column", False, page.locator("#scan-status").inner_text()[:120])
+    check("two-column photo: fish sauce is its own row", "fish sauce" in list_text(page).lower())
+
+    # 15. Round 9: buttons say which item they are for (screen readers), and the picked answer is marked.
+    first_not_needed = page.locator("#list-body button", has_text="Not needed").first
+    check("Not needed button has an item label", (first_not_needed.get_attribute("aria-label") or "").startswith("Not needed: "))
+    first_have = page.locator("#have-body button", has_text="We have it").first
+    check("answer buttons have aria-pressed", first_have.get_attribute("aria-pressed") in ("true", "false"))
+    check("scan status is announced (aria-live)", page.locator("#scan-status").get_attribute("aria-live") == "polite")
+
     browser.close()
 
 failed = [n for n, ok in RESULTS if not ok]

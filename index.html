@@ -83,10 +83,10 @@
       <button class="soft" id="sample">Use the example</button>
     </p>
     <div class="scan">
-      <p class="hint"><strong>Or add a recipe as a photo or a PDF.</strong> Choose a file, or take a photo with your phone camera. The text is read on your own device. The photo is not uploaded anywhere. Then check the words it found and fix any mistakes before you press Check.</p>
+      <p class="hint"><strong>Or add a recipe as a photo or a PDF.</strong> Choose a file, or take a photo with your phone camera. The text is read on your own device and the photo is not uploaded anywhere. Each recipe found is added to your list as its own recipe, so you can press Remove on one. Check the list for mistakes, and Remove and type a recipe again if a reading is wrong.</p>
       <label class="filebtn" for="photo">Choose a recipe photo or PDF</label>
       <input id="photo" type="file" accept="image/*,application/pdf,.pdf">
-      <p class="status" id="scan-status"></p>
+      <p class="status" id="scan-status" aria-live="polite"></p>
     </div>
       <div id="recipe-list" hidden></div>
   </section>
@@ -116,6 +116,7 @@
       <tbody id="list-body"></tbody>
     </table>
     <p class="note" id="list-note"></p>
+    <p class="note">Buy raw meat and seafood last, keep it cold, and bag it apart from produce.</p>
     <p><button id="save-list">Save grocery list (text file)</button> <button class="soft" onclick="window.print()">Print or save as PDF</button></p>
     <p class="status"><strong>ESTIMATES ARE ROUGH GUESSES. THEY ARE NOT REAL OR ACCURATE, AND NOT CHECKED AGAINST ANY STORE.</strong></p>
   </section>
@@ -177,7 +178,7 @@ function parseAmount(line) {
   const rest = qty[2];
   const lower = rest.toLowerCase();
   // "2 eggs" or "3 cloves garlic": the item word itself is the name, not a unit.
-  if (/^(eggs?|cloves?|slices?|pods?|each)\b/.test(lower)) return { family: "count", base: amount, name: rest.replace(/^(cloves?|slices?|pods?)\s+/i, ""), amountText: qty[1] };
+  if (/^(eggs?|cloves?|slices?|pods?|each)\b/.test(lower)) return { family: "count", base: amount, name: rest.replace(/^(cloves?|slices?|pods?)\s+/i, ""), amountText: qty[1] + (/^slices?\b/i.test(lower) ? " slices" : "") };
   // "3 gallon freezer bags" or "1 roll foil" is a count of bags or rolls, not a volume.
   if (/\b(bags?|sheets?|rolls?|foil)\b/.test(lower) && !/\bgrams?\b/.test(lower)) {
     let bagName = rest.replace(/^\d+(\.\d+)?\s*(lbs?|oz|kg|g|ml|l)\s+(bags?|sacks?|packs?)\s+(of\s+)?/i, "");
@@ -233,7 +234,7 @@ function singularWord(w) {
 const TYPOS = { chickn: "chicken", chiken: "chicken", onyon: "onion", onions: "onion", vanila: "vanilla", vanilia: "vanilla",
   potatos: "potato", potatoe: "potato", oliveoil: "olive oil", rise: "rice", tomatos: "tomato", garlc: "garlic", cilantr: "cilantro",
   flour: "flour", sugr: "sugar", buter: "butter", pepr: "pepper", parmesian: "parmesan", jalapeno: "jalapeno",
-  stok: "stock", pase: "paste", oyl: "oil", veg: "vegetable", tumeric: "turmeric", garlick: "garlic", saus: "sauce" };
+  stok: "stock", pase: "paste", oyl: "oil", veg: "vegetable", tumeric: "turmeric", garlick: "garlic", saus: "sauce", sause: "sauce", juic: "juice", chily: "chili", chilly: "chili" };
 // Words the page knows. A word close to one of these (1 wrong letter for short words, 2 for long) is fixed to it.
 const KNOWN_WORDS = ["chicken", "beef", "pork", "turkey", "salmon", "shrimp", "onion", "garlic", "ginger", "tomato", "potato", "carrot", "celery",
   "pepper", "cumin", "turmeric", "cinnamon", "paprika", "oregano", "basil", "parsley", "cilantro", "thyme", "rosemary", "chili", "sugar", "flour",
@@ -355,6 +356,10 @@ function renderHave() {
     const haveBtn = el("button", "We have it", "tiny");
     const moreBtn = el("button", "Want more", "soft tiny");
     const needBtn = el("button", "We need it", "soft tiny");
+    // Screen readers say which item each button is for, and which answer is picked now.
+    haveBtn.setAttribute("aria-label", "We have it: " + g.name); haveBtn.setAttribute("aria-pressed", String(state === true));
+    moreBtn.setAttribute("aria-label", "Want more: " + g.name); moreBtn.setAttribute("aria-pressed", String(state === "more"));
+    needBtn.setAttribute("aria-label", "We need it: " + g.name); needBtn.setAttribute("aria-pressed", String(state === false));
     haveBtn.onclick = () => setAnswer(g.key, true);
     moreBtn.onclick = () => setAnswer(g.key, "more");
     needBtn.onclick = () => setAnswer(g.key, false);
@@ -374,16 +379,16 @@ function setAnswer(key, value) {
 // ---------- groups the grocery list by aisle, so you shop one section at a time ----------
 const LIST_ORDER = ["Produce", "Meat & seafood", "Dairy & eggs", "Frozen", "Bread & bakery", "Baking", "Pantry & spices", "Household", "Other"];
 const CATEGORY_RULES = [
-  ["Pantry & spices", /\b(broth|stock|bouillon|sauce|peanut butter|coconut milk|soup|chili powder|cumin|cinnamon|pepper flakes|black pepper|white pepper)\b/],
+  ["Pantry & spices", /\b(broth|stock|bouillon|sauce|peanut butter|coconut milk|soup|chili powder|cumin|cinnamon|pepper flakes|black pepper|white pepper|lime juice|lemon juice)\b/],
   ["Produce", /\b(bell peppers?|red peppers?|green peppers?|jalapenos?)\b/],
-  ["Frozen", /\b(frozen|hash browns?|ice cream|frozen peas)\b/],
+  ["Frozen", /\b(frozen|hash browns?|ice cream|frozen peas|phyllo|filo)\b/],
   ["Meat & seafood", /\b(chicken|beef|pork|lamb|bacon|sausage|turkey|salmon|shrimp|fish|steak|thighs?|breasts?|tuna|cod|clams?|meat|ham|ground (beef|pork|turkey|chicken|lamb))\b/],
-  ["Dairy & eggs", /\b(milk|buttermilk|cream|butter|cheese|parmesan|mozzarella|ricotta|yogurt|eggs?|cheddar|jack|cream cheese)\b/],
+  ["Dairy & eggs", /\b(milk|buttermilk|cream|butter|cheese|parmesan|mozzarella|ricotta|yogurt|eggs?|cheddar|jack|cream cheese|feta|queso)\b/],
   ["Bread & bakery", /\b(bread|tortillas?|buns?|baguettes?|pitas?|naan|bagels?)\b/],
   ["Baking", /\b(flour|sugar|baking|yeast|vanilla|cocoa|cornstarch|chocolate chips)\b/],
   ["Household", /freezer|sandwich bags?|zip(lock)? bags?|\b(soap|towels?|foil|freezer bags?|paper towels?|detergent|plastic wrap|sponges?|wrap)\b/],
-  ["Pantry & spices", /\b(pasta|spaghetti|penne|ziti|rice|oil|vinegar|sauce|paste|salt|pepper|cumin|paprika|cinnamon|thyme|oregano|powder|seasoning|nutmeg|honey|mustard|mayo|mayonnaise|broth|stock|crushed|canned|chipotle|wine|water|dill|flakes|dried|syrup|peanut butter)\b/],
-  ["Produce", /\b(onions?|garlic|peppers?|tomato(es)?|potato(es)?|carrots?|lettuce|spinach|apples?|bananas?|lemons?|limes?|cilantro|parsley|basil|ginger|scallions?|cucumbers?|avocados?|mushrooms?|sprouts|green beans?|celery|cabbage|herbs?|berries|fruit|broccoli|zucchini|eggplant|shallots?|leeks?|cloves garlic)\b/],
+  ["Pantry & spices", /\b(pasta|spaghetti|penne|ziti|rice|oil|vinegar|sauce|paste|salt|pepper|cumin|paprika|cinnamon|thyme|oregano|powder|seasoning|nutmeg|honey|mustard|mayo|mayonnaise|broth|stock|crushed|canned|chipotle|wine|water|flakes|dried|syrup|peanut butter|noodles?)\b/],
+  ["Produce", /\b(onions?|garlic|peppers?|tomato(es)?|potato(es)?|carrots?|lettuce|spinach|apples?|bananas?|lemons?|limes?|cilantro|parsley|basil|ginger|scallions?|cucumbers?|avocados?|mushrooms?|sprouts|green beans?|celery|cabbage|herbs?|berries|fruit|broccoli|zucchini|eggplant|shallots?|leeks?|cloves garlic|dill|lemongrass|galangal|chil(i|is|ies|es)|chilli(es)?|chiles?)\b/],
 ];
 
 function categoryOf(name) {
@@ -457,6 +462,7 @@ function renderList() {
     const tr = el("tr", undefined, "dotted");
     const nameCell = el("td", n.name);
     const notNeeded = el("button", "Not needed", "soft tiny");
+    notNeeded.setAttribute("aria-label", "Not needed: " + n.name);
     notNeeded.onclick = () => { dropped[key] = true; save("rsa-dropped", dropped); renderAll(); };
     nameCell.append(" ", notNeeded);
     tr.append(nameCell, el("td", n.amountText.join(" + ") || "-"));
@@ -480,6 +486,8 @@ function renderList() {
   $("list-note").textContent = unanswered > 0
     ? "Tap We have it in the list above for anything you already have at home. Everything else is on your list."
     : (rows === 0 ? "Nothing to buy right now. The cupboard is full." : "Every ingredient has an answer. Shop from this list.");
+  const dropCount = Object.keys(dropped).filter(k => dropped[k]).length;
+  if (dropCount) $("list-note").textContent += " " + dropCount + " item(s) marked Not needed: Clear all answers puts them back.";
 }
 
 function renderAll() {
@@ -504,21 +512,39 @@ const WEB_JUNK = /^(serves?\b|#|```|print recipe|author|cuisine|course|prep time
 const METHOD_WORDS = /\b(bake|preheat|oven|minutes?|mins?|until|simmer|stir|serve|mix|combine|add|whisk|heat|cook|pour|place|season|cover|drain|boil|fry|servings?|yield|calories|step|jump to|instructions|marinate|marinade|chill|rest)\b/i;
 
 // A short heading (no number, few words) after a blank line, and above an amount line or an "Ingredients" line, is a title, not an item.
-function dropTitleLines(text) {
-  const raw = text.split(/\r?\n/).map(l => l.trim());
-  const isTitle = raw.map((l, i) => {
+function titleFlags(raw) {
+  return raw.map((l, i) => {
     if (!l || /\d/.test(l) || l.split(" ").length > 4 || /[:.!?|]/.test(l)) return false;
     if (i > 0 && raw[i - 1] !== "") return false;
     const next = raw.slice(i + 1).find(x => x !== "") || "";
-    return /^\d/.test(next) || /^(ingredients?|serves|yield|makes)\b/i.test(next);
+    return /^[-•*]?\s*\d/.test(next) || /^(ingredients?|serves|yield|makes)\b/i.test(next);
   });
-  return raw.filter((l, i) => !isTitle[i]).join("\n");
+}
+function dropTitleLines(text) {
+  const raw = text.split(/\r?\n/).map(l => l.trim());
+  const flags = titleFlags(raw);
+  return raw.filter((l, i) => !flags[i]).join("\n");
+}
+// One recipe per heading: the text under each title is its own recipe. Text before any title is one recipe with no name.
+function splitRecipes(text) {
+  const raw = text.split(/\r?\n/).map(l => l.trim());
+  const flags = titleFlags(raw);
+  const parts = [];
+  let cur = null;
+  raw.forEach((l, i) => {
+    if (flags[i]) { cur = { name: l, lines: [] }; parts.push(cur); return; }
+    if (!l) return;
+    if (!cur) { cur = { name: null, lines: [] }; parts.push(cur); }
+    cur.lines.push(l);
+  });
+  return parts.filter(p => p.lines.length).map((p, k) => ({ name: p.name || ("Recipe " + (k + 1)), text: p.lines.join("\n") }));
 }
 
 function parseRecipeText(text, source) {
   text = dropTitleLines(text);
   return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
     // A table row "item | amount | aisle | staple" reads as "amount item".
+    if (/\b(print|rate this recipe|jump to)\b/i.test(l)) return "";   // website buttons, even inside a table-style line
     if (l.indexOf("|") === -1) return l;
     const cols = l.split("|").map(c => c.trim());
     if (cols[0].toLowerCase() === "item" || /^format/i.test(cols[0])) return "";
@@ -606,14 +632,15 @@ function refreshAll() {
 }
 
 function addRecipe(text, name) {
-  if (!text || !text.trim()) { $("scan-status").textContent = "Type at least one ingredient first."; return; }
+  if (!text || !text.trim()) { $("scan-status").textContent = "Type at least one ingredient first."; return false; }
   // The same recipe pasted again counts as a duplicate even with extra spaces or the lines in another order.
   const signature = t => t.toLowerCase().split(/\r?\n/).map(l => l.trim().replace(/\s+/g, " ")).filter(Boolean).sort().join("|");
-  if (recipes.some(r => signature(r.text) === signature(text))) { $("scan-status").textContent = "That recipe is already on your list."; return; }
+  if (recipes.some(r => signature(r.text) === signature(text))) { $("scan-status").textContent = "That recipe is already on your list."; return false; }
   recipes.push({ name: name || ("Recipe " + (recipes.length + 1)), text: text.trim() });
   save("rsa-recipes", recipes);
   $("recipe").value = "";
   refreshAll();
+  return true;
 }
 
 let typingTimer = null;
@@ -696,17 +723,25 @@ function loadPdfReader() {
 async function readPdf(file, status) {
   await loadPdfReader();
   const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+  // First pass: the most common text height is the body text. Bigger text is a heading.
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) pages.push(await (await pdf.getPage(i)).getTextContent());
+  const heights = {};
+  pages.forEach(c => c.items.forEach(it => { const h = Math.round(it.height); heights[h] = (heights[h] || 0) + 1; }));
+  const body = Number(Object.keys(heights).sort((a, b) => heights[b] - heights[a])[0]) || 12;
   let text = "";
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const content = await (await pdf.getPage(i)).getTextContent();
-    let lastY = null;
+  for (const content of pages) {
+    let lastY = null, inHeading = false;
     for (const item of content.items) {
       const y = item.transform[5];
+      const heading = item.str.trim() !== "" && Math.round(item.height) > body + 1;
       if (lastY !== null && Math.abs(y - lastY) > 2) text += "\n";
+      if (heading && !inHeading) text += "\n";   // a blank line above each heading, so it is read as a title
       text += item.str + " ";
+      inHeading = heading;
       lastY = y;
     }
-    text += "\n\n";   // a blank line between pages, so a title at the top of a page is seen as a title
+    text += "\n\n";   // a blank line between pages
   }
   if (text.replace(/\s/g, "").length > 20) return text;
   // No text layer: draw each page and read it with the photo reader.
@@ -737,6 +772,47 @@ function loadTextReader() {
     document.head.appendChild(tag);
   });
 }
+// Photos with two columns: OCR gives each line a position, so read the left column top to bottom, then the right.
+// A bigger line is a heading, and gets a blank line above it.
+function readInColumns(data) {
+  const words = (data.words || []).filter(w => w.text && w.text.trim() && w.bbox);
+  if (!words.length) return data.text;
+  const width = Math.max(...words.map(w => w.bbox.x1));
+  const sizes = words.map(w => w.bbox.y1 - w.bbox.y0).sort((a, b) => a - b);
+  const typical = sizes[Math.floor(sizes.length / 2)] || 20;
+  // 1. Group words into rows by height (the OCR line grouping can join both columns into one line).
+  const rows = [];
+  words.slice().sort((a, b) => a.bbox.y0 - b.bbox.y0).forEach(w => {
+    const last = rows[rows.length - 1];
+    if (last && Math.abs(w.bbox.y0 - last.y) < typical * 0.6) last.words.push(w);
+    else rows.push({ y: w.bbox.y0, words: [w] });
+  });
+  // 2. Inside a row, a wide gap starts a new piece of text. Each piece belongs to the left or right column by where it starts.
+  const cols = [[], []];
+  rows.forEach(r => {
+    const ws = r.words.sort((a, b) => a.bbox.x0 - b.bbox.x0);
+    let piece = [];
+    const flush = () => {
+      if (!piece.length) return;
+      const c = piece[0].bbox.x0 < width * 0.45 ? 0 : 1;
+      cols[c].push({ text: piece.map(w => w.text).join(" "), big: (piece[0].bbox.y1 - piece[0].bbox.y0) > typical * 1.25 });
+      piece = [];
+    };
+    ws.forEach((w, i) => {
+      if (i > 0 && w.bbox.x0 - ws[i - 1].bbox.x1 > typical * 1.5) flush();
+      piece.push(w);
+    });
+    flush();
+  });
+  // 3. Left column top to bottom, then the right column. A heading (bigger text) gets a blank line above it.
+  let out = "";
+  [0, 1].forEach(c => {
+    if (c === 1 && out) out += "\n";
+    cols[c].forEach(p => { if (p.big) out += "\n"; out += p.text + "\n"; });
+  });
+  return out;
+}
+
 $("photo").addEventListener("change", async () => {
   const file = $("photo").files[0];
   const status = $("scan-status");
@@ -754,22 +830,28 @@ $("photo").addEventListener("change", async () => {
       const result = await Tesseract.recognize(file, "eng", {
         logger: m => { if (m.status === "recognizing text") status.textContent = `Reading the photo... ${Math.round(m.progress * 100)}%`; }
       });
-      text = result.data.text;
+      text = readInColumns(result.data);
     }
-    const found = ingredientLinesFromScan(text);
-    if (found.length === 0) {
-      status.textContent = "No ingredient lines found. Try a closer, straighter photo, or type the list in.";
+    // One recipe per heading, so each recipe in a PDF or photo can be removed on its own.
+    let added = 0, parts = splitRecipes(text);
+    for (const part of parts) {
+      const found = ingredientLinesFromScan(part.text);
+      if (found.length && addRecipe(found.join("\n"), part.name)) added += found.length;
+    }
+    if (added === 0) {
+      if (!/already/.test(status.textContent)) status.textContent = "No ingredient lines found. Try a closer, straighter photo, or type the list in.";
       return;
     }
-    addRecipe(found.join("\n"), file.name);
-    status.textContent = `Found ${found.length} ingredient lines. Check them below, added to your list. To fix one, press Remove on that recipe and type the corrected list.`;
+    status.textContent = `Found ${added} ingredient lines in ${parts.length} recipe part(s). Check them below, added to your list. To fix one, press Remove on that recipe and type the corrected list.`;
   } catch (err) {
     status.textContent = "That file could not be read. Try another file, or type the list in.";
   }
 });
 
 $("save-list").onclick = () => {
-  const rows = [...document.querySelectorAll("#list-body tr")].map(tr => tr.className === "catrow" ? "" + tr.textContent.toUpperCase() : "[ ] " + [...tr.cells].map(c => c.textContent).join("  |  "));
+  // Button labels ("Not needed", "We have it") are not part of the list, so leave them out of the saved file.
+  const cellText = c => { const k = c.cloneNode(true); k.querySelectorAll("button").forEach(b => b.remove()); return k.textContent.trim(); };
+  const rows = [...document.querySelectorAll("#list-body tr")].map(tr => tr.className === "catrow" ? "" + tr.textContent.toUpperCase() : "[ ] " + [...tr.cells].map(cellText).join("  |  "));
   const text = "Grocery list\n" + "=".repeat(12) + "\n" + (rows.length ? rows.join("\n") : "Nothing to buy yet.") + "\n\n" + $("list-note").textContent + "\n";
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
@@ -811,8 +893,8 @@ $("want-add").onclick = addWant;
 $("want-input").addEventListener("keydown", e => { if (e.key === "Enter") addWant(); });
 $("want-clear").onclick = () => { wants = []; save("rsa-wants", wants); updateVisibility(); renderWants(); renderList(); };
 
-// Remember the last recipe typed, so a reload does not lose it.
-// Older versions saved the last recipe box; remove that key so it is never added again on reload.
+// Older versions remembered the last recipe box. Remove that old key so it is never added again on reload.
+// Recipes themselves are kept in rsa-recipes.
 try { localStorage.removeItem("rsa-recipe"); } catch (e) {}
 renderWants();
 refreshAll();

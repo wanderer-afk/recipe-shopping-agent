@@ -53,7 +53,7 @@ pip install -r requirements.txt
 ## Run it
 1. **The page:** double-click `index.html`, or open it from your browser's File menu.
    - Paste a recipe, one ingredient per line, amount first. Use the example button to try it.
-   - Tap "We have it", "Want more" or "We need it" for each ingredient.
+   - Tap "We have it", "Want more" or "We need it" for each ingredient. Tap "Not needed" to take an item off the list (Clear all answers puts it back).
    - Add anything else you want on the list, with no recipe.
    - Dry goods written in cups (flour, sugar, rice, cheese) are converted to weight automatically. For anything else, add the grams in brackets, like `3/4 cup rice (150 g)`.
 2. **The Python tools** (from this folder):
@@ -62,6 +62,7 @@ pip install -r requirements.txt
    python shopping_list.py
    python pack_picker.py
    python -m unittest discover -s tests    # the tests
+   python tests/browser_flow.py            # the page in Microsoft Edge (needs: pip install playwright)
    ```
    These read the made-up recipe in `sample_recipes/`.
 3. **Your own recipes:** set a folder before running, so the tools read your files instead:
@@ -97,13 +98,14 @@ Notes written in our own words from the class lessons. Teacher materials are not
   is ignored by git.
 
 ## Photo of a recipe (on the live page)
-1. Open the live page (below). Under "Add a recipe", press **Choose a recipe photo** (on a phone this opens the camera).
-2. Wait for the reading to finish. The ingredient lines appear in the recipe box.
-3. Check and fix any lines, then press **Check this recipe**.
+1. Open the live page (below). Under "Add a recipe", press **Choose a recipe photo or PDF** (on a phone this can open the camera).
+2. Each recipe found is added to your list as its own recipe, one per heading, so you can press **Remove** on any one of them.
+3. Check the list. If a reading is wrong, Remove that recipe and type it again.
 
-The reading runs in your browser with the free Tesseract.js library. The library is downloaded from a public CDN (cdn.jsdelivr.net) only when you choose a photo, and it is checked against a fingerprint before it runs.
-The photo is not uploaded to any server. Clear, straight, well-lit photos work best; a handwritten or curved recipe may need typing.
-Tested on a made-up printed recipe: all five ingredient lines were read correctly.
+The reading runs in your browser. Photos use the free Tesseract.js library and PDFs use PDF.js. Both are downloaded from public CDNs (cdn.jsdelivr.net and cdnjs.cloudflare.com) only when you choose a file.
+The two main scripts are checked against a fingerprint before they run. The workers and language data that these libraries download after that are not fingerprint-checked.
+The photo is not uploaded to any server. Clear, straight, well-lit photos work best; two columns are read column by column; a handwritten or curved recipe may need typing.
+Tested in Microsoft Edge with `tests/browser_flow.py` on made-up files: a 3-page PDF, a 4-page PDF with five recipes, a single-column photo and a two-column photo. The photo results are checked against the made-up text, so OCR mistakes on other photos can still happen.
 
 ## Live page
 The checker also runs online with no install: https://wanderer-afk.github.io/recipe-shopping-agent/
@@ -124,5 +126,6 @@ Other local models can be chosen with the `OLLAMA_MODEL` setting.
 - The page has been tested in a desktop browser. It has not been tested on a phone.
 
 ## Files and privacy
-Your recipes, photos and answers are never uploaded. The page loads a free text reader and PDF reader from a public CDN (cdn.jsdelivr.net, cdnjs.cloudflare.com) when you choose a photo or PDF. Saved answers and your last recipe are kept in the browser on
-your own computer.
+Your recipes, photos and answers are never uploaded. The page loads its photo reader (from cdn.jsdelivr.net) and its PDF reader (from cdnjs.cloudflare.com) only when you choose a file.
+Your recipes, your "We have it" and "Not needed" choices, and your hand-added items are saved in your browser's local storage on your own computer.
+On GitHub Pages, every project page on the same account shares one local storage area, so other pages on that site could read these saved lists.
