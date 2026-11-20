@@ -31,19 +31,29 @@ MODEL = os.environ.get("OLLAMA_MODEL", "gemma3:12b")
 MAX_STEPS = 6
 
 
+def safe_recipe_path(name: str) -> Path | None:
+    """Return the path only if it is a .md file directly inside the recipe folder. Otherwise None."""
+    if not name or "/" in name or "\\" in name or ".." in name or not name.lower().endswith(".md"):
+        return None
+    folder = RECIPE_FOLDER.resolve()
+    path = (folder / name).resolve()
+    if path.parent != folder or not path.is_file():
+        return None
+    return path
+
+
 def tool_read_recipe(name: str) -> str:
     """Return the grocery lines of one recipe file in the recipe folder."""
-    path = RECIPE_FOLDER / name
-    if not path.exists():
+    path = safe_recipe_path(name)
+    if path is None:
         return f"No recipe named {name!r} in the recipe folder."
-    rows = read_grocery_lines(path)
-    return json.dumps(rows)
+    return json.dumps(read_grocery_lines(path))
 
 
 def tool_shopping_split(name: str) -> str:
     """Split one recipe into 'buy' and 'check at home' using the pantry list."""
-    path = RECIPE_FOLDER / name
-    if not path.exists():
+    path = safe_recipe_path(name)
+    if path is None:
         return f"No recipe named {name!r} in the recipe folder."
     return json.dumps(build_shopping_list(path, load_pantry()), default=str)
 
@@ -85,17 +95,21 @@ def run(question: str) -> str:
             choice = ask_model(messages)
         except (OSError, ValueError, KeyError) as err:
             return f"The model did not answer ({err}). Is Ollama running and is {MODEL} pulled?"
+        if not isinstance(choice, dict):
+            return "Stopped: the model's reply was not a JSON object. Nothing was changed."
         if "final" in choice:
-            return choice["final"]
+            return str(choice["final"])
         name = choice.get("tool")
         if name not in TOOLS:
             return f"Stopped: the model asked for an unknown tool ({name!r}). Nothing was changed."
-        args = choice.get("args", {})
+        args = choice.get("args") or {}
+        if not isinstance(args, dict):
+            args = {}
         print(f"  step {step}: {name} {args}")
         try:
             result = TOOLS[name][0](**args)
-        except TypeError as err:
-            result = f"Bad inputs for {name}: {err}"
+        except Exception as err:  # a bad tool call is reported to the model, never crashes the agent
+            result = f"Tool {name} could not run: {type(err).__name__}: {err}"
         messages.append({"role": "assistant", "content": json.dumps(choice)})
         messages.append({"role": "user", "content": f"Tool result: {result}"})
     return f"Stopped after {MAX_STEPS} steps to stay safe. Ask a smaller question."

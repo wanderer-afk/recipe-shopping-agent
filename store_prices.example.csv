@@ -1,0 +1,5 @@
+item,pack_size,price
+# MADE-UP EXAMPLE PRICES. NOT REAL. Copy this file to store_prices.csv and type in your own prices.
+whole milk,1 gal,4.00
+whole milk,1 qt,1.40
+whole milk,1 pint,0.95

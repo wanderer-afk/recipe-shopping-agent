@@ -1,18 +1,13 @@
-# Recipe Shopping Checker (Codecademy bootcamp, Project 2)
+# Recipe Shopping Checker
 
-Paste a recipe, tell the checker what you already have at home, and get a grocery list written in
-amounts stores actually sell, like "at least 2 tbsp" or "at least 6 oz".
-
-Built by Bailey as a student project for the Codecademy course "Building Agentic AI Applications".
-Claude (an AI assistant) helped with parts of the code, the page design and the write-up; Bailey set
-the goals, made the decisions and tested the results. Not affiliated with or endorsed by Codecademy.
-
-**Status:** the checker page, the three Python tools and a first AI agent (`agent.py`) work. The agent is tested on one sample question.
+Paste a recipe, or take a photo of one. Tell the checker what you already have at home, and it gives you a
+grocery list written in amounts stores actually sell, like "at least 2 tbsp" or "at least 6 oz".
+It can also answer questions about a recipe with a small AI agent that runs on your own computer.
 
 ## What is in this repo
 | File | What it does |
 |---|---|
-| `index.html` | The checker page. Open it in a browser. No install. Nothing is sent anywhere. |
+| `index.html` | The checker page. Open it in a browser. No install. Your recipes and answers stay on your device. |
 | `recipe_reader.py` | Reads a recipe's `## Grocery lines` table (plain Python, no AI). |
 | `shopping_list.py` | Splits items into "buy" and "check at home first" using a pantry list. |
 | `pack_picker.py` | Picks the cheapest pack sizes that cover an amount, counting leftovers. |
@@ -27,22 +22,24 @@ the goals, made the decisions and tested the results. Not affiliated with or end
 | `sample_items.csv` | 12 rows from the staples list, as a small example. |
 | `pantry.example.json` | A blank-style pantry list. Copy it to `pantry.json` to use it. |
 | `requirements.txt` | Python packages needed to rebuild the PDFs. |
-| `.env.example` | A template for future API keys. Copy it to `.env` and fill it in. Never commit `.env`. |
+| `store_prices.example.csv` | Made-up prices showing the format for your own price file. Not real. |
+| `LICENSE` | MIT license. |
 
 ## Prerequisites
 - **Python 3.10 or newer** (for the three Python tools). Check with `python --version`.
 - **A web browser** for `index.html` (Chrome, Edge, Firefox or Safari).
 - **Packages:** the three tools use only the standard library, so nothing to install for them.
   Rebuilding the PDFs needs `reportlab` (listed in `requirements.txt`).
-- **No API keys are needed today.** A future AI step will need an API key from a model provider.
-  You create that account and key yourself, and paste it into `.env`.
+- **No API keys are needed.** The AI agent runs on your own computer through Ollama (free).
 
 ## Install (optional, only to rebuild the PDFs)
-Windows (Command Prompt):
+Windows (PowerShell, the default in Windows 11):
 ```
 python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
+Windows (Command Prompt): run `.venv\Scripts\activate.bat` instead of `Activate.ps1`.
 Mac / Linux:
 ```
 python3 -m venv .venv
@@ -61,12 +58,17 @@ pip install -r requirements.txt
    python recipe_reader.py
    python shopping_list.py
    python pack_picker.py
+   python -m unittest discover -s tests    # the tests
    ```
    These read the made-up recipe in `sample_recipes/`.
 3. **Your own recipes:** set a folder before running, so the tools read your files instead:
-   - Windows: `set RECIPE_FOLDER=C:\path\to\your\recipes`
+ecipes"`
+ecipes`
+   - Windows PowerShell: `$env:RECIPE_FOLDER="C:\path\to\your\recipes"`
+   - Windows Command Prompt: `set RECIPE_FOLDER=C:\path\to\your\recipes`
    - Mac / Linux: `export RECIPE_FOLDER=/path/to/your/recipes`
 4. **Rebuild the PDFs:** `python make_pdfs.py`
+5. **Prices (optional):** copy `store_prices.example.csv` to `store_prices.csv` and type in your own prices. The example prices are made up.
 
 ## About the price data (read this first)
 - **Almost every price here is fake or a guess.** `estimated_prices_NOT_REAL.*` and
@@ -83,7 +85,6 @@ pip install -r requirements.txt
 ## Your own data and keys
 - `pantry.json`, `store_prices.csv`, `.env` and `all_items.csv` are in `.gitignore`. Keep your personal lists
   and keys out of any public copy.
-- `.env.example` shows the shape of a key file. A real key goes only in `.env`, on your own computer.
 
 ## What the class taught that shaped this project
 Notes written in our own words from the class lessons. Teacher materials are not copied here.
@@ -99,7 +100,7 @@ Notes written in our own words from the class lessons. Teacher materials are not
 2. Wait for the reading to finish. The ingredient lines appear in the recipe box.
 3. Check and fix any lines, then press **Check this recipe**.
 
-The reading runs in your browser with the free Tesseract.js library (loaded from a public CDN the first time).
+The reading runs in your browser with the free Tesseract.js library. The library is downloaded from a public CDN (cdn.jsdelivr.net) only when you choose a photo, and it is checked against a fingerprint before it runs.
 The photo is not uploaded to any server. Clear, straight, well-lit photos work best; a handwritten or curved recipe may need typing.
 Tested on a made-up printed recipe: all five ingredient lines were read correctly.
 
