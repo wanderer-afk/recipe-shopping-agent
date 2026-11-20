@@ -427,6 +427,7 @@ function updateVisibility() {
 // ---------- photo of a recipe: read the text on this device (Tesseract.js, free, no upload) ----------
 // Lines that look like ingredients are kept; the rest is dropped so you can review what is left.
 function ingredientLinesFromScan(text) {
+  text = text.replace(/\bIb\b/g, "lb");   // OCR often reads the letter l as capital I
   return text.split(/\r?\n/)
     .map(l => l.replace(/^[\s•·\-–—*|>]+/, "").replace(/\s+/g, " ").trim())
     // Keep a line if it has an amount anywhere: "Water 1 tbsp" or "2 eggs" both count.
