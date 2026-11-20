@@ -234,6 +234,33 @@ with sync_playwright() as pw:
         check("broken saved recipes (%s): page still loads" % bad[:12], page.locator("#list-body").count() == 1 and not errors, "; ".join(errors)[:160])
         errors.clear()
 
+    # 23. Round 13: phone width (375 px). No sideways scroll, typing box text 16 px or bigger (phones zoom in below that), buttons 32 px or taller.
+    phone = browser.new_page(viewport={"width": 375, "height": 812})
+    phone.goto(PAGE)
+    phone.fill("#recipe", "Eggs on toast\n2 eggs\n1 slice bread\n1 tbsp butter")
+    phone.click("#check")
+    phone.wait_for_timeout(300)
+    overflow = phone.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
+    check("phone width: no sideways scroll", overflow <= 0, "overflow %d px" % overflow)
+    font = phone.evaluate("parseFloat(getComputedStyle(document.getElementById('recipe')).fontSize)")
+    check("phone width: typing box text is 16 px or bigger", font >= 16, "%s px" % font)
+    box = phone.get_by_role("button", name="We have it").first.bounding_box()
+    check("phone width: answer buttons are 32 px or taller", bool(box) and box["height"] >= 32, str(box))
+    phone.close()
+
+    # 24. Round 13: keyboard only. Focus a "Not needed" button and press Enter.
+    kb = browser.new_page(viewport={"width": 1280, "height": 900})
+    kb.goto(PAGE)
+    kb.fill("#recipe", "Toast\n2 eggs\n1 cup milk")
+    kb.click("#check")
+    kb.wait_for_timeout(300)
+    target = kb.locator("#list-body tr.dotted").first.locator("td").first.inner_text().split("\n")[0].strip()
+    kb.locator("#list-body tr.dotted").first.get_by_role("button", name="Not needed").focus()
+    kb.keyboard.press("Enter")
+    kb.wait_for_timeout(300)
+    check("keyboard: Enter on Not needed removes the item", target not in kb.locator("#list-body").inner_text(), target)
+    kb.close()
+
     browser.close()
 
 failed = [n for n, ok in RESULTS if not ok]
