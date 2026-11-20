@@ -1,0 +1,2 @@
+# Only needed to rebuild the PDFs (make_pdfs.py). The three Python tools need nothing extra.
+reportlab==5.1.0

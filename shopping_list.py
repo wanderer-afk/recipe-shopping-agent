@@ -1,6 +1,6 @@
 """Step 2 of the Recipe-to-Shopping agent: turn one recipe into a shopping list.
 
-Rules (from Bailey):
+Rules (set by the project owner):
 - flag "no"  = buy it for this recipe.
 - flag "yes" = a pantry staple. Check the pantry file first. Only list it if it is NOT there.
 

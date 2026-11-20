@@ -1,54 +1,105 @@
-# Recipe-to-Shopping Agent (Codecademy bootcamp, Project 2)
+# Recipe Shopping Checker (Codecademy bootcamp, Project 2)
 
-A student project, in progress. It is part of the Codecademy course
-"Building Agentic AI Applications". It is not affiliated with or endorsed by Codecademy.
+Paste a recipe, tell the checker what you already have at home, and get a grocery list written in
+amounts stores actually sell, like "at least 2 tbsp" or "at least 6 oz".
 
-The goal: give it a recipe, and it works out what to buy, what you probably already have at home,
-and which pack sizes cover the amounts for the lowest total cost.
+Built by Bailey as a student project for the Codecademy course "Building Agentic AI Applications".
+Claude (an AI assistant) helped with parts of the code, the page design and the write-up; Bailey set
+the goals, made the decisions and tested the results. Not affiliated with or endorsed by Codecademy.
 
-## What works now
-- **recipe_reader.py**: reads a recipe's `## Grocery lines` table (no AI).
-- **shopping_list.py**: splits the items into "buy" and "check at home first", using your pantry list.
-- **pack_picker.py**: picks the cheapest pack sizes that cover each amount, and counts leftovers.
-  It asks you when two choices cost the same.
+**Status:** the checker page and the three Python tools work. The AI-agent step (the part that
+will let a model call these tools) is not built yet.
 
-## What does not work yet
-- No real store prices. You type them yourself into `store_prices.csv`, which is not in this repo.
-- No AI step yet. The three tools above will become the functions an AI agent calls.
-- No pantry list is included. Copy `pantry.example.json` to `pantry.json` and fill it in.
+## What is in this repo
+| File | What it does |
+|---|---|
+| `index.html` | The checker page. Open it in a browser. No install. Nothing is sent anywhere. |
+| `recipe_reader.py` | Reads a recipe's `## Grocery lines` table (plain Python, no AI). |
+| `shopping_list.py` | Splits items into "buy" and "check at home first" using a pantry list. |
+| `pack_picker.py` | Picks the cheapest pack sizes that cover an amount, counting leftovers. |
+| `staples_all_cultures.csv` / `.pdf` | 161 everyday staples used across many cuisines. Prices blank. |
+| `estimated_prices_NOT_REAL.csv` / `.pdf` | Rough price guesses for those 161 items. **Not real.** |
+| `average_prices_staples.csv` | The only checked price: eggs, from a US government average (see below). |
+| `grocery_items_and_prices.pdf` | The checked-prices sheet as a PDF. |
+| `showcase_prices_EXAMPLE_made_up.csv` / `.pdf` | Made-up example prices for demos. **Not real.** |
+| `make_pdfs.py` | Rebuilds the two PDFs from their CSV files. |
+| `sample_recipes/Sample Pancakes.md` | A made-up recipe for testing. |
+| `sample_items.csv` | 12 rows from the staples list, as a small example. |
+| `pantry.example.json` | A blank-style pantry list. Copy it to `pantry.json` to use it. |
+| `requirements.txt` | Python packages needed to rebuild the PDFs. |
+| `.env.example` | A template for future API keys. Copy it to `.env` and fill it in. Never commit `.env`. |
 
-## Try it
-Requires Python 3.10 or newer. The scripts use only the standard library.
+## Prerequisites
+- **Python 3.10 or newer** (for the three Python tools). Check with `python --version`.
+- **A web browser** for `index.html` (Chrome, Edge, Firefox or Safari).
+- **Packages:** the three tools use only the standard library, so nothing to install for them.
+  Rebuilding the PDFs needs `reportlab` (listed in `requirements.txt`).
+- **No API keys are needed today.** A future AI step will need an API key from a model provider.
+  You create that account and key yourself, and paste it into `.env`.
 
-```bash
-python recipe_reader.py
-python shopping_list.py
-python pack_picker.py
+## Install (optional, only to rebuild the PDFs)
+Windows (Command Prompt):
+```
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+```
+Mac / Linux:
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-These read the made-up recipe in `sample_recipes/`. To use your own recipes, set the folder
-first, for example `set RECIPE_FOLDER=C:\path\to\your\recipes` on Windows.
+## Run it
+1. **The page:** double-click `index.html`, or open it from your browser's File menu.
+   - Paste a recipe, one ingredient per line, amount first. Use the example button to try it.
+   - Tap "We have it", "Want more" or "We need it" for each ingredient.
+   - Add anything else you want on the list, with no recipe.
+   - Lines measured by spoon or cup but sold by weight need the grams in brackets, like `3/4 cup rice (150 g)`.
+2. **The Python tools** (from this folder):
+   ```
+   python recipe_reader.py
+   python shopping_list.py
+   python pack_picker.py
+   ```
+   These read the made-up recipe in `sample_recipes/`.
+3. **Your own recipes:** set a folder before running, so the tools read your files instead:
+   - Windows: `set RECIPE_FOLDER=C:\path\to\your\recipes`
+   - Mac / Linux: `export RECIPE_FOLDER=/path/to/your/recipes`
+4. **Rebuild the PDFs:** `python make_pdfs.py`
 
-## Files
-- `staples_all_cultures.pdf` and `.csv`: a general list of 161 staples used across many cuisines, with blank price columns. Prices are for you to type in by hand.
-- `sample_items.csv`: 12 rows from that list, as a small example.
-- `pantry.example.json`: a blank-style pantry file.
+## About the price data (read this first)
+- **Almost every price here is fake or a guess.** `estimated_prices_NOT_REAL.*` and
+  `showcase_prices_EXAMPLE_made_up.*` are labelled as such in every file and on every page.
+  Do not use them for shopping or budgeting.
+- **One price is checked:** eggs, large Grade A, about $2.58 per dozen. This is the US Bureau of
+  Labor Statistics national average for January 2026, so it is several months old and local prices differ.
+- **The checker page does not need prices.** It tells you the amount to buy, not the cost.
+- **To use your own prices**, type them into a CSV with the columns `item,pack_size,price`, using the size
+  printed on the package. Prices you type in stay in your own browser or your own files.
+- **Store websites are not scraped.** Most stores forbid automated collection of their prices and catalogues
+  in their terms. Prices here are typed in by hand, or come from public government data.
 
-## Prices
-Prices are typed in by hand from a store's shelves or website. This project does not collect
-prices from any store's website, because store terms usually forbid automated collection.
+## Your own data and keys
+- `pantry.json`, `store_prices.csv`, `.env` and `all_items.csv` are in `.gitignore`. Keep your personal lists
+  and keys out of any public copy.
+- `.env.example` shows the shape of a key file. A real key goes only in `.env`, on your own computer.
 
-## Secrets and personal data
-Never commit a `.env` file or an API key. `.gitignore` blocks them and the other personal files.
+## What the class taught that shaped this project
+Notes written in our own words from the class lessons. Teacher materials are not copied here.
+- **Week 5 (agents):** an agent picks a tool by reading its description, so each tool's name and
+  description must say exactly what it does. Our three tools are written that way.
+- **Week 5 (safety):** a person should approve anything risky before it happens, and a loop needs a step
+  limit. The checker never changes a shopping list or a store account on its own.
+- **Week 6 (automation):** login details live in saved credentials, not in files. This is why `.env`
+  is ignored by git.
 
-## The checker page (index.html)
-Open `index.html` in any web browser. Nothing is installed and nothing is sent anywhere.
-1. Paste a recipe (or text copied from a PDF or list), one ingredient per line.
-2. Tap "We have it", "Want more" or "We need it" for each one.
-3. The grocery list shows what to buy, in amounts stores sell, like "at least 2 tbsp" or "at least 6 oz". No prices are needed.
-4. Add anything else you want on the list, with no recipe.
+## Limits
+- The AI step is not built, so nothing reads your recipe in natural language yet.
+- Name matching is by plain text. "Milk" and "whole milk" match, but a different word for the same food may not.
+- Packs counted in bunches, cans or dozens are flagged for you to check, except dozen eggs.
+- The page has been tested in a desktop browser. It has not been tested on a phone.
 
-The page only uses amounts; it does not know store prices. The one price shown is a national
-government average for large eggs (January 2026, several months old), labelled on the page.
-Answers and the last recipe are kept in your own browser, not in this repo.
-Lines measured by spoon or cup but sold by weight need the grams in brackets, like `3/4 cup rice (150 g)`.
+## Files and privacy
+Nothing on the page is sent over the internet. Saved answers and your last recipe are kept in the browser on
+your own computer.
