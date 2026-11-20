@@ -133,7 +133,7 @@ const UNITS = {
   "tsp": ["volume", 4.929], "teaspoon": ["volume", 4.929], "teaspoons": ["volume", 4.929],
   "tbsp": ["volume", 14.787], "tablespoon": ["volume", 14.787], "tablespoons": ["volume", 14.787],
   "cup": ["volume", 236.588], "cups": ["volume", 236.588],
-  "fl oz": ["volume", 29.5735], "pint": ["volume", 473.176], "pints": ["volume", 473.176],
+  "fl oz": ["volume", 29.5735], "pint": ["volume", 473.176], "pints": ["volume", 473.176], "pt": ["volume", 473.176], "pts": ["volume", 473.176],
   "qt": ["volume", 946.353], "quart": ["volume", 946.353],
   "gal": ["volume", 3785.41], "gallon": ["volume", 3785.41], "gallons": ["volume", 3785.41],
   "each": ["count", 1], "clove": ["count", 1], "cloves": ["count", 1], "egg": ["count", 1], "eggs": ["count", 1],
@@ -197,7 +197,7 @@ const NAME_NOISE = new Set(["pinch", "dash", "taste", "cloves", "clove", "minced
   "boneless", "skinless", "packed", "heaping", "level", "scant", "rounded"]);
 const NAME_SYNONYMS = {
   "scallion": "green onion", "spring onion": "green onion", "green onions": "green onion",
-  "bell pepper": "pepper", "red bell pepper": "pepper", "green bell pepper": "pepper", "sweet pepper": "pepper",
+  "red bell pepper": "bell pepper", "green bell pepper": "bell pepper", "sweet pepper": "bell pepper",
   "coriander leaves": "cilantro", "cilantro leaves": "cilantro",
   "kosher salt": "salt", "table salt": "salt", "fine salt": "salt", "sea salt": "salt",
   "all purpose flour": "flour", "all-purpose flour": "flour", "plain flour": "flour",
@@ -222,6 +222,7 @@ function normName(text) {
 // Turns a need into an amount a shopper can find on a shelf, rounded UP, written "at least ...".
 // Returns null when there is no sensible store amount (for example, a count of packages).
 function storeAmount(need) {
+  if (!(need.base > 0) || !isFinite(need.base)) return null;
   if (need.family === "mass") {
     const oz = need.base / 28.3495;
     if (oz >= 32) return `at least ${Math.ceil((oz / 16) * 2) / 2} lb`;
@@ -315,7 +316,7 @@ const CATEGORY_RULES = [
   ["Produce", /\b(bell peppers?|red peppers?|green peppers?|jalapenos?)\b/],
   ["Frozen", /\b(frozen|hash browns?|ice cream|frozen peas)\b/],
   ["Meat & seafood", /\b(chicken|beef|pork|lamb|bacon|sausage|turkey|salmon|shrimp|fish|steak|thighs?|breasts?|tuna|cod|clams?|meat|ham|ground (beef|pork|turkey|chicken|lamb))\b/],
-  ["Dairy & eggs", /\b(milk|cream|butter|cheese|parmesan|mozzarella|ricotta|yogurt|eggs?|cheddar|jack|cream cheese)\b/],
+  ["Dairy & eggs", /\b(milk|buttermilk|cream|butter|cheese|parmesan|mozzarella|ricotta|yogurt|eggs?|cheddar|jack|cream cheese)\b/],
   ["Bread & bakery", /\b(bread|tortillas?|buns?|baguettes?|pitas?|naan|bagels?)\b/],
   ["Baking", /\b(flour|sugar|baking|yeast|vanilla|cocoa|cornstarch|chocolate chips)\b/],
   ["Household", /\b(soap|towels?|foil|freezer bags?|paper|detergent|plastic wrap|sponges?|wrap|bags?)\b/],
@@ -425,8 +426,10 @@ function parseRecipeText(text, source) {
     const rawName = parsed ? parsed.name.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim() : c.text;
     const display = rawName.replace(/^[,\s]+/, "").replace(/,.*$/, "").trim() || c.text;
     const noAmount = !parsed;   // "milk" with no amount counts as one, and says so
+    let key = normName(display);
+    if (!key || /^(cups?|tsp|tbsp|oz|lbs?|g|pt|pints?|pinch|dash|cans?|jars?)$/.test(key)) key = original.toLowerCase().replace(/\s+/g, " ").trim();
     return {
-      raw: original, name: display, key: normName(display), parsed: true,
+      raw: original, name: display, key, parsed: true,
       family: noAmount ? "count" : parsed.family,
       base: noAmount ? 1 : parsed.base,
       amountText: noAmount ? (/to taste|pinch|dash/i.test(original) ? "small amount, check your shelf" : "no amount typed (1 assumed)") : parsed.amountText,
@@ -517,7 +520,7 @@ function ingredientLinesFromScan(text) {
     .map(l => l.replace(/^[\s•·\-–—*|>]+/, "").replace(/\s+/g, " ").trim())
     .filter(l => l.length >= 2 && l.length <= 120)
     // Drop baking times, temperatures, method sentences and section headings.
-    .filter(l => !/\b(min|mins|minutes?|hours?|seconds?|bake|preheat|heat|until|serve|serves|yield|makes|page|step|notes?|instructions?|equipment|nutrition|calories|method|directions|ingredients|grocery|list|whisk|combine|stir|cook|oven|degrees?)\b|°|\b[FC]\b|https?:|www\.|\d{1,2}\/\d{1,2}\/\d{2,4}|\(?\d{3}\)?[ .-]\d{3}[ .-]\d{4}/i.test(l))
+    .filter(l => !/\b(min|mins|minutes?|hours?|seconds?|bake|preheat|heat|until|serve|serves|yield|makes|page|step|notes?|instructions?|equipment|nutrition|calories|method|directions|ingredients|grocery|list|whisk|combine|stir|cook|oven|degrees?|copyright|enjoy|flip)\b|°|\b[FC]\b|https?:|www\.|\d{1,2}\/\d{1,2}\/\d{2,4}|\(?\d{3}\)?[ .-]\d{3}[ .-]\d{4}/i.test(l))
     // Keep lines with an amount, or a plain item name such as "milk" (but not an all-capitals title).
     .filter(l => /\d|[½¼¾⅓⅔]|\b(tsp|tbsp|cups?|oz|g|lbs?|pinch|pieces?|leaf|leaves|small|medium|large|slices?|cloves?)\b/i.test(l)
       || (/^[A-Za-z][A-Za-z ,'()-]{1,40}$/.test(l) && l !== l.toUpperCase()));
