@@ -331,7 +331,12 @@ function load(key, fallback) {
   } catch (e) { return fallback; }
 }
 function save(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* nothing is remembered */ }
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch (e) {
+    // Browser storage is full or blocked: say so, instead of looking saved when it is not.
+    $("scan-status").textContent = "This browser has no room to remember your list. It works now, but it will be gone when you close the page.";
+    return false;
+  }
 }
 
 // ---------- page ----------

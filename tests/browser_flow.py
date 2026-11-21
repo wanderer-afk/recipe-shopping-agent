@@ -277,6 +277,34 @@ with sync_playwright() as pw:
     lvl.wait_for_timeout(300)
     lvl.close()
 
+    # 27. Level 4 teacher: browser storage full. The page must say so, not look saved.
+    full = browser.new_page(viewport={"width": 1280, "height": 900})
+    full.goto(PAGE)
+    full.evaluate("() => { Storage.prototype.setItem = function () { throw new Error('QuotaExceededError'); }; }")
+    full.fill("#recipe", "Toast\n2 eggs\n1 cup milk")
+    full.click("#check")
+    full.wait_for_timeout(300)
+    check("storage full: the page says the list will not be remembered", "no room to remember" in full.locator("#scan-status").inner_text(), full.locator("#scan-status").inner_text()[:120])
+    check("storage full: the list still works on screen", "milk" in list_text(full).lower())
+    full.close()
+
+    # 28. Level 4 teacher: 300 random, messy pastes in a row. No page errors, and the page keeps answering.
+    import random
+    rng = random.Random(7)
+    pieces = ["2", "1/2", "1 1/2", "0", "99", "-", "x", "(", ")", "|", ",", "cup", "tbsp", "oz", "g", "can", "egg", "flour", "salt", "to taste", "½", "\U0001F95A", "２", "<b>", "</b>", "\t", "醒油", "---", "?", "/", "+", "dozen", "half", "juice of"]
+    fuzz = browser.new_page(viewport={"width": 1280, "height": 900})
+    fuzz_errors = []
+    fuzz.on("pageerror", lambda e: fuzz_errors.append(str(e)))
+    fuzz.goto(PAGE)
+    for _ in range(300):
+        text = "\n".join(" ".join(rng.choice(pieces) for _ in range(rng.randint(1, 8))) for _ in range(rng.randint(1, 4)))
+        fuzz.fill("#recipe", text)
+        fuzz.click("#check")
+    fuzz.wait_for_timeout(300)
+    check("300 random pastes: no page errors", not fuzz_errors, "; ".join(fuzz_errors)[:200])
+    check("300 random pastes: the page still answers a clean paste", (fuzz.fill("#recipe", "2 eggs") or True) and (fuzz.click("#check") or True) and "egg" in fuzz.locator("#list-body").inner_text().lower())
+    fuzz.close()
+
     browser.close()
 
 failed = [n for n, ok in RESULTS if not ok]
