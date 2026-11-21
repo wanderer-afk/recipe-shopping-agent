@@ -82,6 +82,12 @@ check("round 11: emoji, full-width digits and HTML tags do not hide the amount",
 check("round 11: symbols with no word in them are not items", () => {
   assert.deepStrictEqual(rows("---\n???\n2").map(x => x.name), []);
 });
+check("rounds 14-15: scale buttons, half a lemon, fraction ranges and fraction sums", () => {
+  assert.deepStrictEqual(rows("1x 2x 3x").map(x => x.name), []);
+  assert.strictEqual(rows("half a lemon, juiced")[0].base, 0.5);
+  assert.strictEqual(rows("1 1/2 - 2 tbsp honey")[0].key, "honey");
+  assert.ok(Math.abs(rows("1/4 cup + 2 tbsp olive oil")[0].base - 88.7) < 0.5, "base " + rows("1/4 cup + 2 tbsp olive oil")[0].base);
+});
 console.log("\n" + passed + " page tests passed");
 
 // Labelled accuracy: each line has the answer we expect (item key and kind of amount).

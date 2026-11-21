@@ -514,7 +514,7 @@ const CUP_GRAMS = {
 };
 // Lines that are headings or website text, not food.
 const NOT_FOOD = /^(for (the )?[\w\s]+|ingredients?|to serve|garnish|topping|jump to|print|advertisement|servings?|rate|pin|save|share|subscribe|notes?|directions|method|instructions?|nutrition|yield|leftovers?)s?:?$/i;
-const WEB_JUNK = /^(serves?\b|#|```|print recipe|author|cuisine|course|prep time|cook time|total time|rating|did you make|share this|pin it|skip to|leave a comment|enjoy\b|rated |home\s*>)|^\d+x$|\d+x\d+ (baking|pan|dish|loaf)|\d+(\.\d+)? from \d+|reviews?\b|\bfrom \d+ (reviews|ratings)|out of 5 stars/i;
+const WEB_JUNK = /^(serves?\b|#|```|print recipe|author|cuisine|course|prep time|cook time|total time|rating|did you make|share this|pin it|skip to|leave a comment|enjoy\b|rated |home\s*>)|^(\d+x\s*)+$|   \d+x\d+ (baking|pan|dish|loaf)|\d+(\.\d+)? from \d+|reviews?\b|\bfrom \d+ (reviews|ratings)|out of 5 stars/i;
 const METHOD_WORDS = /\b(bake|preheat|oven|minutes?|mins?|until|simmer|stir|serve|mix|combine|add|whisk|heat|cook|pour|place|season|cover|drain|boil|fry|servings?|yield|calories|step|jump to|instructions|marinate|marinade|chill|rest)\b/i;
 
 // A short heading (no number, few words) after a blank line, and above an amount line or an "Ingredients" line, is a title, not an item.
@@ -672,12 +672,12 @@ function cleanLine(raw) {
   // "1x 400g can chickpeas" is one can: the "x 400g" package size is dropped, so it reads "1 can chickpeas".
   raw = raw.replace(/^(\d+)\s*x\s+\d+(?:\.\d+)?\s*(?:g|oz|ml|kg|lb)\s+(cans?|jars?|bottles?|bags?|packs?|packages?)\s+/i, (m, n, u) => n + " " + u.toLowerCase() + " ");
   raw = raw.replace(/(\d)-(lbs?|oz|kg|g|ml|l)\b/gi, '$1 $2');
-  raw = raw.replace(/(\d+(?:\.\d+)?)\s*(tsp|tbsp|cups?|fl oz|oz|ml)\s*\+\s*(\d+(?:\.\d+)?|\d+\/\d+|\d+\s+\d+\/\d+)\s*(tsp|tbsp|cups?|fl oz|oz|ml)\b/gi, (m, a, ua, b, ub) => {
+  raw = raw.replace(/(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(tsp|tbsp|cups?|fl oz|oz|ml)\s*\+\s*(\d+(?:\.\d+)?|\d+\/\d+|\d+\s+\d+\/\d+)\s*(tsp|tbsp|cups?|fl oz|oz|ml)\b/gi, (m, a, ua, b, ub) => {
     const fr = (x) => { const f = x.match(/^(\d+)\s+(\d+)\/(\d+)$/); if (f) return Number(f[1]) + Number(f[2]) / Number(f[3]); const g = x.match(/^(\d+)\/(\d+)$/); return g ? Number(g[1]) / Number(g[2]) : Number(x); };
     const ua_ml = UNITS[ua.toLowerCase()] ? UNITS[ua.toLowerCase()][1] : null;
     const ub_ml = UNITS[ub.toLowerCase()] ? UNITS[ub.toLowerCase()][1] : null;
     if (!ua_ml || !ub_ml || UNITS[ua.toLowerCase()][0] !== UNITS[ub.toLowerCase()][0]) return m;
-    const total = Math.round((Number(a) * ua_ml + fr(b) * ub_ml) * 10) / 10;
+    const total = Math.round((fr(a) * ua_ml + fr(b) * ub_ml) * 10) / 10;
     return total + " ml";
   });
   raw = raw.replace(/(\d+)\s*(lbs?|pounds?)\s+(\d+(?:\.\d+)?)\s*(oz|ounces?)\b/i, (m, lb, u1, oz) => (Number(lb) + Number(oz) / 16).toFixed(3).replace(/\.?0+$/, "") + " lb");
@@ -685,6 +685,7 @@ function cleanLine(raw) {
   let s = raw.replace(/^[^\p{L}\p{N}]+/u, "").replace(/^\d+[.)]\s+/, "").replace(/⁄/g, "/").replace(/^\./, "0.");
   s = s.replace(/\(\s*\d[\d.\/\s]*\s*(?:fl\s*oz|oz|g|kg|ml|l|lbs?)\s*\)/gi, " ").replace(/\s+/g, " ");
   s = s.replace(/^juice of (\d+)\s+(\w+)/i, "$1 $2");
+  s = s.replace(/^half (?:an?\s+|of\s+(?:an?\s+)?)?(\w+)/i, "0.5 $1");   // "half a lemon" -> "0.5 lemon"
   s = s.replace(/^(about|approx\.?|approximately|optional:?)\s+/i, "");
   // "ground beef 1 lb" or "ground beef, 3/4 lb" -> "1 lb ground beef" (the amount goes first)
   const endAmount = s.match(/^([^\d].*?)[,\s]+((?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)|[½¼¾⅓⅔⅛⅜⅝⅞])\s*(lbs?|oz|cups?|tsp|tbsp|g|kg|ml|quarts?|pints?|cans?)\.?$/i);
@@ -693,7 +694,7 @@ function cleanLine(raw) {
   s = s.replace(/^(\d+(?:\s+\d+\/\d+|\/\d+|\.\d+)?)\s*(?:\([^)]*\)\s*)?(cans?|bottles?|jars?|packages?|pkgs?)\s+/i, (m, amt, unit) => amt + " " + (/^cans?$/i.test(unit) ? "canned " : ""));
   s = s.replace(/(\d)\s*([½¼¾⅓⅔⅛⅜⅝⅞⅕⅙])/g, (m, d, f) => d + " " + FRACTION_CHARS[f]).replace(/[½¼¾⅓⅔⅛⅜⅝⅞⅕⅙]/g, f => FRACTION_CHARS[f]);
   let note = "";
-  const range = s.match(/^(\d+(?:\.\d+)?)\s*(?:-|–|to)\s*(\d+(?:\.\d+)?)\s*(.*)$/);
+  const range = s.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(?:-|–|to)\s*(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(.*)$/);
   if (range) { s = `${range[2]} ${range[3]}`.trim(); note = `you typed ${range[1]} to ${range[2]}; the higher number is used`; }
   s = s.replace(/\bcanned\s+canned\b/gi, "canned");
   return { text: s, note };
