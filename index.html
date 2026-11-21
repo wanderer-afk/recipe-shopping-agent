@@ -357,7 +357,7 @@ function renderHave() {
   byKey.forEach(g => {
     const tr = el("tr", undefined, "dotted");
     const state = pantry[g.key];
-    tr.append(el("td", g.name), el("td", g.amounts.join(" + ")));
+    tr.append(el("td", g.name), el("td", shortParts(g.amounts)));
     const td = el("td", undefined, "row-actions");
     const haveBtn = el("button", "We have it", "tiny");
     const moreBtn = el("button", "Want more", "soft tiny");
@@ -427,6 +427,12 @@ function groupListRows() {
   });
 }
 
+// Many recipes can ask for the same item. Show the first three amounts, then how many more, so the row stays readable.
+function shortParts(parts) {
+  if (parts.length <= 3) return parts.join(" + ");
+  return parts.slice(0, 3).join(" + ") + " + " + (parts.length - 3) + " more";
+}
+
 function renderList() {
   const body = $("list-body");
   body.textContent = "";
@@ -471,7 +477,7 @@ function renderList() {
     notNeeded.setAttribute("aria-label", "Not needed: " + n.name);
     notNeeded.onclick = () => { dropped[key] = true; save("rsa-dropped", dropped); renderAll(); };
     nameCell.append(" ", notNeeded);
-    tr.append(nameCell, el("td", n.amountText.join(" + ") || "-"));
+    tr.append(nameCell, el("td", shortParts(n.amountText) || "-"));
     if (n.unparsed) {
       tr.append(el("td", "Check by hand: amount not readable", "pill warn"));
     } else {
@@ -482,7 +488,7 @@ function renderList() {
       }).filter(Boolean);
       // A spoon or cup measure with grams in brackets is bought by weight.
       if (n.grams && !n.byFamily.mass) parts = [storeAmount({ family: "mass", base: n.grams })].filter(Boolean);
-      tr.append(el("td", parts.join(" + ") || "-"));
+      tr.append(el("td", shortParts(parts) || "-"));
     }
     tr.append(el("td", estimateText(n.key), "status"));
     body.append(tr);

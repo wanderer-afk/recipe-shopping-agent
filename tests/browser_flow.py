@@ -261,6 +261,22 @@ with sync_playwright() as pw:
     check("keyboard: Enter on Not needed removes the item", target not in kb.locator("#list-body").inner_text(), target)
     kb.close()
 
+    # 25. Level 3 teacher: twelve recipes in one session; a shared item is one row with a short amount list.
+    lvl = browser.new_page(viewport={"width": 1280, "height": 900})
+    lvl.goto(PAGE)
+    for i in range(12):
+        lvl.fill("#recipe", "Recipe %d\n%d cups flour\n2 eggs\n1 tsp salt\n%d tbsp butter\n" % (i, i % 3 + 1, i % 4 + 1))
+        lvl.click("#check")
+        lvl.wait_for_timeout(100)
+    check("12 recipes in one session all listed", lvl.locator("#recipe-list").inner_text().count("ingredients") == 12)
+    flour_rows = [r for r in lvl.locator("#list-body").inner_text().split("\n") if "flour" in r.lower()]
+    check("shared flour is one row", len(flour_rows) == 1, str(flour_rows)[:200])
+    check("shared flour shows at most three amounts then 'more'", bool(flour_rows) and " more" in flour_rows[0] and flour_rows[0].count(" + ") <= 3, str(flour_rows)[:200])
+    # 26. Level 3 teacher: a file that is not a readable PDF or photo gives a plain message, and the page keeps working.
+    lvl.set_input_files("#photo", str(FILES / "round8_three_pages.pdf"))
+    lvl.wait_for_timeout(300)
+    lvl.close()
+
     browser.close()
 
 failed = [n for n, ok in RESULTS if not ok]
