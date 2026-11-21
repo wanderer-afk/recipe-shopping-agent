@@ -305,6 +305,52 @@ with sync_playwright() as pw:
     check("300 random pastes: the page still answers a clean paste", (fuzz.fill("#recipe", "2 eggs") or True) and (fuzz.click("#check") or True) and "egg" in fuzz.locator("#list-body").inner_text().lower())
     fuzz.close()
 
+    # 29. FINAL BOSS (round 5): one session that uses every level at once.
+    boss = browser.new_page(viewport={"width": 1280, "height": 900})
+    boss_errors = []
+    boss.on("pageerror", lambda e: boss_errors.append(str(e)))
+    boss.goto(PAGE)
+    site = "Best Banana Bread\nJump to Recipe Print Recipe\nServings: 10 slices\nScale\n1x 2x 3x\nIngredients\n3 very ripe bananas, mashed\n1 1/2 cups all-purpose flour\n1/2 cup chopped walnuts (optional)\nInstructions\nBake for 60 to 65 minutes until a toothpick comes out clean.\nAdvertisement"
+    boss.fill("#recipe", site)
+    boss.click("#check")
+    boss.wait_for_timeout(300)
+    boss_txt = list_text(boss).lower()
+    check("boss: website headings and buttons are not items", "1x" not in boss_txt and "advertisement" not in boss_txt and "bake for" not in boss_txt, boss_txt[:200])
+    check("boss: bananas and walnuts (optional) are read", "banana" in boss_txt and "walnut" in boss_txt)
+    boss.fill("#recipe", "1/4 cup + 2 tbsp olive oil\n1 1/2 - 2 tbsp honey\nhalf a lemon, juiced\n1x 400g can chickpeas\n1 dozen eggs")
+    boss.click("#check")
+    boss.wait_for_timeout(300)
+    boss_txt = list_text(boss).lower()
+    check("boss: fraction sums, ranges, half a lemon and can lines all read", all(w in boss_txt for w in ["olive oil", "honey", "lemon", "canned chickpea", "egg"]), boss_txt[:200])
+    boss.set_input_files("#photo", str(FILES / "round10_three_pages.pdf"))
+    boss.wait_for_function("document.querySelector('#scan-status').textContent.startsWith('Found')", timeout=90000)
+    boss.wait_for_timeout(500)
+    n_pdf = boss.locator("#recipe-list").inner_text().count("ingredients")
+    check("boss: the 3-page PDF adds its recipes", n_pdf >= 4, "recipe count %d" % n_pdf)
+    for i in range(12):
+        boss.fill("#recipe", "Session %d\n%d cups flour\n2 eggs\n%d tbsp butter\n" % (i, i % 3 + 1, i % 4 + 1))
+        boss.click("#check")
+        boss.wait_for_timeout(80)
+    total = boss.locator("#recipe-list").inner_text().count("ingredients")
+    flour_rows = [r for r in list_text(boss).split("\n") if "flour" in r.lower()]
+    check("boss: twelve more recipes join the list", total == n_pdf + 12, "total %d" % total)
+    check("boss: shared flour is one short row", len(flour_rows) == 1 and flour_rows[0].count(" + ") <= 3, str(flour_rows)[:160])
+    for _ in range(3):
+        boss.locator("#recipe-list button", has_text="Remove").first.click()
+        boss.wait_for_timeout(150)
+    after = boss.locator("#recipe-list").inner_text().count("ingredients")
+    check("boss: removing three recipes takes three away", after == total - 3, "after %d" % after)
+    boss.reload()
+    boss.wait_for_timeout(500)
+    check("boss: after a reload the same recipes are there", boss.locator("#recipe-list").inner_text().count("ingredients") == after)
+    boss.evaluate("() => { Storage.prototype.setItem = function () { throw new Error('QuotaExceededError'); }; }")
+    boss.fill("#recipe", "Last soup\n2 cups stock\n1 onion")
+    boss.click("#check")
+    boss.wait_for_timeout(300)
+    check("boss: a full storage is said out loud", "no room to remember" in boss.locator("#scan-status").inner_text())
+    check("boss: no page errors across the whole session", not boss_errors, "; ".join(boss_errors)[:200])
+    boss.close()
+
     browser.close()
 
 failed = [n for n, ok in RESULTS if not ok]

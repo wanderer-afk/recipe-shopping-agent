@@ -38,12 +38,12 @@ It can also answer questions about a recipe with a small AI agent that runs on y
 **How well it works (last checked):**
 | Check | Result |
 |---|---|
-| Labelled lines (`tests/accuracy_cases.json`) | 27 of 27 right |
-| Page logic tests (`node tests/test_page.js`) | 14 pass |
+| Labelled lines (`tests/accuracy_cases.json`) | 33 of 33 right |
+| Page logic tests (`node tests/test_page.js`) | 15 pass |
 | Python tests (`python -m unittest discover -s tests`) | 14 pass |
-| Browser checks in Microsoft Edge (`python tests/browser_flow.py`) | 52 of 52 pass |
+| Browser checks in Microsoft Edge (`python tests/browser_flow.py`) | 69 of 69 pass |
 
-**What the browser checks cover:** typos and junk lines, two recipes at once, a 3-page PDF, a 4-page PDF with five recipes, a single-column and a two-column photo, adding and removing items, "We have it" and "Not needed", duplicate pastes, hostile text (`<script>` is shown as text and never runs), a 2,000-line paste, saved data that survives a reload, broken saved data that does not crash the page, a phone-width layout with no sideways scroll, and keyboard-only use.
+**What the browser checks cover:** a realistic recipe pasted from a website, tricky amounts (ranges, fraction sums, half a lemon, a dozen), twelve recipes in one session, a final boss that runs all of this in one session, a full browser storage message, 300 random messy pastes, typos and junk lines, two recipes at once, a 3-page PDF, a 4-page PDF with five recipes, a single-column and a two-column photo, adding and removing items, "We have it" and "Not needed", duplicate pastes, hostile text (`<script>` is shown as text and never runs), a 2,000-line paste, saved data that survives a reload, broken saved data that does not crash the page, a phone-width layout with no sideways scroll, and keyboard-only use.
 
 **Still weak:** photo reading still makes mistakes on poor photos; a one-word typed title with no amount counts as an item; two items on one line joined with ";" are read as one; and the page is not yet tested on a real phone.
 

@@ -133,5 +133,35 @@
     "line": "4 cups cooked rise",
     "key": "cooked rice",
     "family": "volume"
+  },
+  {
+    "line": "half a lemon, juiced",
+    "key": "lemon",
+    "family": "count"
+  },
+  {
+    "line": "1 1/2 - 2 tbsp honey",
+    "key": "honey",
+    "family": "volume"
+  },
+  {
+    "line": "1/4 cup + 2 tbsp olive oil",
+    "key": "olive oil",
+    "family": "volume"
+  },
+  {
+    "line": "1x 400g can chickpeas",
+    "key": "canned chickpea",
+    "family": "count"
+  },
+  {
+    "line": "🥚 2 eggs",
+    "key": "egg",
+    "family": "count"
+  },
+  {
+    "line": "1 dozen eggs",
+    "key": "egg",
+    "family": "count"
   }
 ]
